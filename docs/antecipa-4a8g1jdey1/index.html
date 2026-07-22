@@ -224,26 +224,35 @@ homologados por todos os órgãos federais (API de pesquisa de preços do compra
 </div>
 
 <!-- =============== MÓDULO 3 =============== -->
-<h2 class="mod"><span class="mnum">MÓDULO 3</span> Alertas de Risco — Contratos Reais · Res. 781/2022</h2>
-<p class="moddesc">Todos os contratos do STF publicados no PNCP desde 2023, classificados nas escalas de
-probabilidade e impacto da Res. 781/2022 por um <strong>escore heurístico transparente (baseline)</strong>.
-O painel de fatores explica cada classificação; a coluna de desfecho mostra o que <em>realmente</em>
-aconteceu (aditivos, acréscimos, rescisões) — rótulo que alimentará o modelo supervisionado.</p>
+<h2 class="mod"><span class="mnum">MÓDULO 3</span> Alertas de Risco — Nível observado (Res. 781/2022) × Predição na assinatura (ML)</h2>
+<p class="moddesc">Todos os contratos do STF publicados no PNCP desde 2023, sob <strong>duas leituras
+distintas e complementares</strong>, que não devem ser confundidas:</p>
+<p class="moddesc" style="margin-top:-6px">
+<strong>1. Nível de risco observado (Res. 781/2022)</strong> — escore heurístico transparente nas escalas
+de probabilidade × impacto da norma. É uma leitura <em>retrospectiva</em>: considera também o que já
+aconteceu com o contrato (aditivos firmados, acréscimos, rescisão) e pondera pelo impacto orçamentário.
+Responde a “como este contrato está hoje”.<br>
+<strong>2. Probabilidade prevista na assinatura (ML)</strong> — modelo supervisionado calibrado, usando
+<em>somente</em> informação disponível no dia da assinatura. É probabilidade pura, sem ponderação por
+impacto. Responde a “o que era previsível antes de contratar”.<br>
+<span class="small">Por isso um contrato de altíssimo valor que já sofreu aditivos pode aparecer como
+<em>Crítico</em> na primeira leitura e com probabilidade modesta na segunda — são perguntas diferentes.
+A coluna de desfecho mostra o que de fato ocorreu, e é o rótulo com que o modelo foi treinado.</span></p>
 
 <div class="grid2">
   <div class="card">
-    <h3 class="ct">Semáforo de Risco</h3>
+    <h3 class="ct">Semáforo — Nível de risco observado (Res. 781/2022)</h3>
     <p class="csub" id="procCount"></p>
-    <div style="overflow-x:auto;max-height:560px;overflow-y:auto"><table id="procTbl" aria-label="Contratos classificados por risco">
+    <div style="overflow-x:auto;max-height:560px;overflow-y:auto"><table id="procTbl" aria-label="Contratos por nível de risco observado nas escalas da Resolução 781/2022">
       <thead><tr>
-        <th>Contrato</th><th>Objeto</th><th class="num">Valor global</th><th>Risco</th>
+        <th>Contrato</th><th>Objeto</th><th class="num">Valor global</th><th>Nível observado</th>
       </tr></thead><tbody></tbody>
     </table></div>
   </div>
 
   <div>
     <div class="card" style="margin-bottom:14px">
-      <h3 class="ct" id="shapTitle">Fatores da classificação</h3>
+      <h3 class="ct" id="shapTitle">Fatores do nível observado</h3>
       <p class="csub" id="shapSub">Selecione um contrato ao lado para ver os fatores</p>
       <div id="shapChart"></div>
       <div id="outcomeBox"></div>
@@ -256,8 +265,9 @@ aconteceu (aditivos, acréscimos, rescisões) — rótulo que alimentará o mode
     </div>
 
     <div class="card">
-      <h3 class="ct">Matriz de Riscos — Probabilidade × Impacto</h3>
-      <p class="csub">Distribuição real dos contratos filtrados nas escalas da Res. 781/2022</p>
+      <h3 class="ct">Matriz de Riscos — Probabilidade × Impacto (nível observado)</h3>
+      <p class="csub">Distribuição real dos contratos filtrados nas escalas da Res. 781/2022 —
+        leitura retrospectiva, não a predição do modelo</p>
       <div id="matrix"></div>
       <div class="legend" id="matrixLegend"></div>
     </div>
@@ -339,9 +349,9 @@ function renderKPIs(){
    <div class="card kpi"><div class="klabel">Contratos reais monitorados</div>
      <div class="kvalue">${ps.length}</div>
      <div class="kdelta">${BRLc(valTotal)} em valor global (PNCP)</div></div>
-   <div class="card kpi"><div class="klabel">Risco Elevado ou Crítico</div>
+   <div class="card kpi"><div class="klabel">Nível observado Elevado ou Crítico</div>
      <div class="kvalue">${high.length}</div>
-     <div class="kdelta"><span class="${high.length?'up-bad':'up-good'}">${ps.length?Math.round(100*high.length/ps.length):0}%</span> do filtro atual</div></div>
+     <div class="kdelta"><span class="${high.length?'up-bad':'up-good'}">${ps.length?Math.round(100*high.length/ps.length):0}%</span> do filtro atual · Res. 781/2022</div></div>
    <div class="card kpi"><div class="klabel">Desfecho adverso observado</div>
      <div class="kvalue">${adv.length}</div>
      <div class="kdelta">rescisão, acréscimo &gt;25% ou prorrogação &gt;1 ano</div></div>
@@ -510,10 +520,10 @@ function renderShap(){
   const p = PROCS.find(x=>x.pncp===state.selProc);
   const box=$('#shapChart'), gov=$('#govRow'), done=$('#govDone'), out=$('#outcomeBox');
   if(!p){ box.innerHTML=''; out.innerHTML=''; gov.style.display='none'; done.innerHTML='';
-    $('#shapTitle').textContent='Fatores da classificação';
+    $('#shapTitle').textContent='Fatores do nível observado';
     $('#shapSub').textContent='Selecione um contrato ao lado para ver os fatores'; return; }
-  $('#shapTitle').innerHTML = `Contrato ${esc(p.id)} ${badge(p.nivel)}`;
-  $('#shapSub').textContent = `probabilidade ${p.prob}/5 · impacto ${p.imp}/5 (Res. 781/2022) · escore heurístico transparente — não é ML`;
+  $('#shapTitle').innerHTML = `Contrato ${esc(p.id)} · nível observado ${badge(p.nivel)}`;
+  $('#shapSub').textContent = `probabilidade ${p.prob}/5 · impacto ${p.imp}/5 (Res. 781/2022) · escore heurístico transparente, retrospectivo (inclui o que já ocorreu) — não é o modelo de ML`;
   const fs = p.fatores.filter(f=>f[1]!==null).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,7);
   const W=520,rowH=40,top=26,H=top+Math.max(fs.length,1)*rowH+30;
   const maxAbs = Math.max(...fs.map(f=>Math.abs(f[1])),.5);
@@ -550,13 +560,18 @@ function renderShap(){
   });
   const dsc = p.desfecho;
   const mlBox = p.ml ? `
-   <h3 class="ct" style="margin-top:12px">Modelo supervisionado (ML)</h3>
+   <h3 class="ct" style="margin-top:12px">Probabilidade prevista na assinatura (ML)</h3>
    <div style="display:flex;gap:14px;align-items:center;margin-top:6px;flex-wrap:wrap">
      <div style="font-size:26px;font-weight:600">${(p.ml.prob*100).toFixed(0)}%</div>
      <div class="small" style="max-width:340px">probabilidade calibrada de desfecho adverso
-       em até 12 meses — ${esc((DADOS.resumo.modelo_ml||{}).nome||'modelo')}, treinado em
+       em até 12 meses, usando <strong>apenas o que se sabia no dia da assinatura</strong> —
+       ${esc((DADOS.resumo.modelo_ml||{}).nome||'modelo')}, treinado em
        ${esc((DADOS.resumo.modelo_ml||{}).treino||'dados reais do PNCP')}</div>
    </div>
+   <p class="small" style="margin-top:4px">Referência para leitura: taxa base de 1,8% no conjunto de
+     treino; máximo de 24,5% na carteira do STF. ${p.ml.prob >= 0.036
+       ? `<strong>${(p.ml.prob/0.018).toLocaleString('pt-BR',{maximumFractionDigits:1})}× a taxa base</strong> — escore elevado em termos relativos.`
+       : 'Próximo da taxa base.'}</p>
    ${(p.ml.fatores||[]).length? `<div class="small" style="margin-top:6px">Principais fatores
      (contribuições em log-odds da regressão logística):
      ${p.ml.fatores.map(f=>`<span style="white-space:nowrap">${esc(f[0])}
@@ -623,7 +638,7 @@ function renderFullTbl(){
   const ps = filtered();
   $('#fullTbl').innerHTML = `<table>
    <thead><tr><th>Contrato PNCP</th><th>Objeto</th><th>Fornecedor</th><th class="num">Valor (R$)</th>
-   <th class="num">P</th><th class="num">I</th><th>Nível</th><th class="num">Aditivos</th><th>Desfecho</th></tr></thead>
+   <th class="num">P</th><th class="num">I</th><th>Nível observado</th><th class="num">Aditivos</th><th>Desfecho</th></tr></thead>
    <tbody>${ps.map(p=>`<tr>
      <td style="font-variant-numeric:tabular-nums">${esc(p.pncp)}</td>
      <td>${esc(p.obj.slice(0,120))}</td><td>${esc(p.forn_nome||'')}</td>
@@ -683,8 +698,10 @@ $('#foot').innerHTML = `
   explicações por ${esc(R.modelo_ml.explicacao)}. Métricas completas em antecipa-real/dados/processados/relatorio_modelo.md.<br>`:''}
   Fontes: API de Consulta do PNCP (contratos e termos) · API de busca do PNCP (presença nacional de fornecedores)
   · API de pesquisa de preços do compras.gov.br (referências CATMAT/CATSER) · Dados abertos do CNPJ/Receita Federal
-  (minhareceita.org). Classificação: escore heurístico transparente nas escalas da Res. STF 781/2022 —
-  baseline sobre o qual o modelo supervisionado (treinado no desfecho real, ver dataset_ml.csv) será avaliado.<br>
+  (minhareceita.org). Duas leituras distintas: <strong>nível observado</strong> = escore heurístico
+  transparente nas escalas da Res. STF 781/2022 (retrospectivo, ponderado por impacto, serve de baseline);
+  <strong>probabilidade prevista</strong> = modelo supervisionado calibrado, treinado no desfecho real e
+  usando apenas informação disponível na assinatura.<br>
   Projeto de dissertação: “Do Controle Reativo à Antecipação: IA para Gestão Preditiva de Riscos em Compras
   Públicas no STF” — Cristina Harumi Matsunaga · Mestrado Profissional em Administração Pública, FACE/UnB ·
   Orientadora: Profa. Dra. Marina Figueiredo Moreira.`;
