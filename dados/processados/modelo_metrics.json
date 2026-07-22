@@ -1,0 +1,86 @@
+{
+ "metricas": {
+  "Regressão Logística": {
+   "limiar": 0.756,
+   "precision": 0.049,
+   "recall": 0.35,
+   "f1": 0.086,
+   "pr_auc": 0.04,
+   "roc_auc": 0.746,
+   "alertas": 998,
+   "positivos_teste": 140
+  },
+  "Gradient Boosting": {
+   "limiar": 0.765,
+   "precision": 0.064,
+   "recall": 0.393,
+   "f1": 0.111,
+   "pr_auc": 0.071,
+   "roc_auc": 0.798,
+   "alertas": 853,
+   "positivos_teste": 140
+  },
+  "Baseline heurístico (Res. 781)": {
+   "limiar": "nível > Moderado",
+   "precision": 0.067,
+   "recall": 0.129,
+   "f1": 0.088,
+   "pr_auc": 0.033,
+   "roc_auc": 0.705,
+   "alertas": 267,
+   "positivos_teste": 140
+  },
+  "_prevalencia_teste": 0.016
+ },
+ "importancias": [
+  [
+   "duração (dias)",
+   0.0353
+  ],
+  [
+   "log10(valor global)",
+   0.0149
+  ],
+  [
+   "nº contratos do fornecedor",
+   0.0099
+  ],
+  [
+   "faltante: log10(capital social)",
+   0.0087
+  ],
+  [
+   "log10(capital/valor)",
+   0.0067
+  ],
+  [
+   "faltante: optante do Simples",
+   0.0066
+  ],
+  [
+   "log10(capital social)",
+   0.0059
+  ],
+  [
+   "idade do fornecedor (anos)",
+   0.0035
+  ],
+  [
+   "optante do Simples",
+   0.0015
+  ],
+  [
+   "consórcio",
+   0.0
+  ],
+  [
+   "situação cadastral ativa",
+   -0.0
+  ],
+  [
+   "faltante: idade do fornecedor (anos)",
+   -0.0002
+  ]
+ ],
+ "melhor_modelo": "Gradient Boosting"
+}

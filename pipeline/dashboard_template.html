@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANTECIPA — Dashboard com Dados Reais do PNCP · STF</title>
+<style>
+:root{
+  color-scheme: light;
+  --page:#f9f9f7; --surface:#fcfcfb;
+  --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --baseline:#c3c2b7; --ring:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s4:#eda100;
+  --seq-250:#86b6ef; --seq-400:#3987e5; --seq-550:#1c5cab;
+  --div-neg:#2a78d6; --div-pos:#e34948; --div-mid:#f0efec;
+  --st-good:#0ca30c; --st-warn:#fab219; --st-serious:#ec835a; --st-crit:#d03b3b;
+  --good-text:#006300;
+  --wash-good:rgba(12,163,12,.14); --wash-warn:rgba(250,178,25,.16);
+  --wash-serious:rgba(236,131,90,.16); --wash-crit:rgba(208,59,59,.14);
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19;
+    --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --baseline:#383835; --ring:rgba(255,255,255,.10);
+    --seq-250:#86b6ef; --seq-400:#3987e5; --seq-550:#1c5cab;
+    --div-neg:#3987e5; --div-pos:#e66767; --div-mid:#383835;
+    --good-text:#0ca30c;
+    --wash-good:rgba(12,163,12,.20); --wash-warn:rgba(250,178,25,.20);
+    --wash-serious:rgba(236,131,90,.20); --wash-crit:rgba(208,59,59,.22);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --page:#0d0d0d; --surface:#1a1a19;
+  --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --baseline:#383835; --ring:rgba(255,255,255,.10);
+  --seq-250:#86b6ef; --seq-400:#3987e5; --seq-550:#1c5cab;
+  --div-neg:#3987e5; --div-pos:#e66767; --div-mid:#383835;
+  --good-text:#0ca30c;
+  --wash-good:rgba(12,163,12,.20); --wash-warn:rgba(250,178,25,.20);
+  --wash-serious:rgba(236,131,90,.20); --wash-crit:rgba(208,59,59,.22);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--page);color:var(--ink);font-size:14px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 24px 48px}
+header.app{display:flex;align-items:center;gap:14px;padding:18px 0 14px;flex-wrap:wrap}
+.logo{width:40px;height:40px;border-radius:10px;background:var(--seq-550);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
+.app h1{font-size:19px;font-weight:700;letter-spacing:.2px}
+.app .sub{font-size:12.5px;color:var(--ink-2)}
+.badge-poc{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--good-text);border:1px solid var(--st-good);border-radius:999px;padding:4px 10px;background:var(--wash-good)}
+.theme-btn{border:1px solid var(--ring);background:var(--surface);color:var(--ink-2);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer}
+.theme-btn:hover{color:var(--ink)}
+.filters{display:flex;gap:8px;align-items:center;margin:10px 0 18px;flex-wrap:wrap}
+.filters .flabel{font-size:12px;color:var(--muted);margin-right:2px}
+.chip{border:1px solid var(--ring);background:var(--surface);color:var(--ink-2);padding:5px 12px;border-radius:999px;font-size:12.5px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--seq-550);border-color:var(--seq-550);color:#fff;font-weight:600}
+.chip:hover:not([aria-pressed="true"]){color:var(--ink)}
+select,input[type=number],input[type=text]{background:var(--surface);color:var(--ink);border:1px solid var(--ring);border-radius:8px;padding:6px 10px;font-size:13px;font-family:inherit;max-width:100%}
+select:focus,input:focus,button:focus-visible{outline:2px solid var(--seq-400);outline-offset:1px}
+.card{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:16px 18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px}
+.kpi .klabel{font-size:12px;color:var(--ink-2)}
+.kpi .kvalue{font-size:30px;font-weight:600;margin-top:2px}
+.kpi .kdelta{font-size:12px;margin-top:2px;color:var(--ink-2)}
+.kpi .kdelta .up-bad{color:var(--st-crit);font-weight:600}
+.kpi .kdelta .up-good{color:var(--good-text);font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+h2.mod{font-size:15px;font-weight:700;margin:26px 0 4px;display:flex;align-items:center;gap:8px}
+h2.mod .mnum{font-size:11px;font-weight:700;color:var(--seq-550);border:1px solid var(--seq-250);border-radius:6px;padding:1px 7px;letter-spacing:.4px}
+:root[data-theme="dark"] h2.mod .mnum{color:var(--seq-250)}
+p.moddesc{font-size:12.5px;color:var(--ink-2);margin-bottom:12px;max-width:880px}
+h3.ct{font-size:13px;font-weight:600;margin-bottom:2px}
+p.csub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.rbadge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.rb-baixo{background:var(--wash-good);color:var(--good-text)}
+.rb-moderado{background:var(--wash-warn);color:#8a5a00}
+.rb-elevado{background:var(--wash-serious);color:#9c3d14}
+.rb-critico{background:var(--wash-crit);color:var(--st-crit)}
+:root[data-theme="dark"] .rb-moderado{color:#fab219}
+:root[data-theme="dark"] .rb-elevado{color:#ec835a}
+:root[data-theme="dark"] .rb-critico{color:#e66767}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])) .rb-moderado{color:#fab219}
+  :root:where(:not([data-theme="light"])) .rb-elevado{color:#ec835a}
+  :root:where(:not([data-theme="light"])) .rb-critico{color:#e66767}
+}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:left;font-weight:600;padding:7px 10px;border-bottom:1px solid var(--grid)}
+td{padding:8px 10px;border-bottom:1px solid var(--grid);vertical-align:middle}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.prow{cursor:pointer}
+tr.prow:hover td{background:color-mix(in srgb,var(--seq-250) 10%,transparent)}
+tr.prow[aria-selected="true"] td{background:color-mix(in srgb,var(--seq-250) 18%,transparent)}
+.meter{height:10px;border-radius:6px;background:var(--div-mid);overflow:hidden;position:relative}
+.meter>span{display:block;height:100%;border-radius:6px 4px 4px 6px}
+.san-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--grid);font-size:13px}
+.san-row:last-child{border-bottom:none}
+.san-ic{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
+.san-ok{background:var(--wash-good);color:var(--good-text)}
+.san-bad{background:var(--wash-crit);color:var(--st-crit)}
+.san-na{background:var(--div-mid);color:var(--muted)}
+.san-name{flex:1}
+.san-st{font-size:12px;font-weight:600}
+.san-st.ok{color:var(--good-text)} .san-st.bad{color:var(--st-crit)} .san-st.na{color:var(--muted);font-weight:400}
+svg text{font-family:inherit}
+.axis-t{fill:var(--muted);font-size:11px}
+.lbl-t{fill:var(--ink-2);font-size:12px}
+.val-t{fill:var(--ink);font-size:12px;font-weight:600}
+.baseline{stroke:var(--baseline);stroke-width:1}
+#tip{position:fixed;pointer-events:none;background:var(--surface);border:1px solid var(--ring);border-radius:8px;padding:8px 11px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.12);z-index:50;display:none;max-width:300px}
+#tip .tv{font-size:13px;font-weight:700}
+#tip .tl{color:var(--ink-2)}
+.gov{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center}
+.gbtn{border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--ring)}
+.gbtn.validate{background:var(--seq-550);border-color:var(--seq-550);color:#fff}
+.gbtn.validate:hover{background:var(--seq-400)}
+.gbtn.fp{background:var(--surface);color:var(--ink)}
+.gbtn.fp:hover{border-color:var(--baseline)}
+.gov-note{font-size:12px;color:var(--ink-2)}
+.gov-done{font-size:12.5px;font-weight:600}
+.gov-done.ok{color:var(--good-text)}
+.gov-done.fp{color:var(--ink-2)}
+.hm{display:grid;gap:2px;margin-top:6px}
+.hm-cell{border-radius:4px;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;position:relative;cursor:default}
+.hm-lab{font-size:10.5px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.small{font-size:12px;color:var(--muted)}
+.tbl-toggle{background:none;border:none;color:var(--seq-550);font-size:12px;cursor:pointer;text-decoration:underline;padding:0}
+:root[data-theme="dark"] .tbl-toggle{color:var(--seq-250)}
+footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--grid);font-size:11.5px;color:var(--muted);line-height:1.6}
+.legend{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--ink-2);margin:4px 0 8px;flex-wrap:wrap}
+.legend .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.notice{font-size:12px;color:var(--ink-2);border-left:3px solid var(--s4);padding:6px 10px;margin-top:10px;background:color-mix(in srgb,var(--s4) 7%,transparent);border-radius:0 6px 6px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="app">
+  <div class="logo">A</div>
+  <div>
+    <h1>ANTECIPA · Dashboard Preditivo de Riscos</h1>
+    <div class="sub">ANálise TECnológica e Inteligência Preditiva em Aquisições — Compras Públicas · STF</div>
+  </div>
+  <span class="badge-poc" id="badgeReal">● Dados reais · PNCP</span>
+  <button class="theme-btn" id="themeBtn" title="Alternar tema">◐ Tema</button>
+</header>
+
+<div class="filters" id="filterRow">
+  <span class="flabel">Assinatura:</span>
+  <span id="anoChips"></span>
+  <span class="flabel" style="margin-left:14px">Categoria:</span>
+  <select id="catSel" aria-label="Filtrar por categoria de processo">
+    <option value="">Todas</option>
+  </select>
+  <span class="flabel" style="margin-left:14px">Nível:</span>
+  <select id="nivSel" aria-label="Filtrar por nível de risco">
+    <option value="">Todos</option>
+    <option>Baixo</option><option>Moderado</option><option>Elevado</option><option>Crítico</option>
+  </select>
+</div>
+
+<div class="kpis" id="kpiRow"></div>
+
+<!-- =============== MÓDULO 1 =============== -->
+<h2 class="mod"><span class="mnum">MÓDULO 1</span> Spend Analysis — Preços do STF × Mercado Nacional</h2>
+<p class="moddesc">Itens CATMAT/CATSER homologados pelo STF (PNCP) comparados à distribuição real de preços
+homologados por todos os órgãos federais (API de pesquisa de preços do compras.gov.br).</p>
+
+<div class="grid2">
+  <div class="card">
+    <h3 class="ct">Card de Explicabilidade de Preços</h3>
+    <p class="csub">Distribuição nacional real do item selecionado (5º–95º percentil)</p>
+    <div style="margin-bottom:14px">
+      <label>
+        <span class="small">Item CATMAT/CATSER do STF</span><br>
+        <select id="itemSel" style="width:100%;margin-top:3px"></select>
+      </label>
+    </div>
+    <div id="priceCard"></div>
+    <div id="priceStrip"></div>
+  </div>
+
+  <div class="card">
+    <h3 class="ct">Itens do STF com referência nacional de preço</h3>
+    <p class="csub">Estimativa do STF × mediana nacional homologada</p>
+    <div id="itemTbl" style="overflow-x:auto"></div>
+    <div class="notice">A comparação usa o mesmo código de catálogo, mas unidades de fornecimento e
+    especificações variam entre órgãos — desvios são <strong>gatilho de diligência</strong>, não conclusão
+    de sobrepreço (ver análise crítica, item 2.4).</div>
+  </div>
+</div>
+
+<!-- =============== MÓDULO 2 =============== -->
+<h2 class="mod"><span class="mnum">MÓDULO 2</span> Raio-X do Fornecedor</h2>
+<p class="moddesc">Perfil real dos principais fornecedores do STF: dados cadastrais abertos da Receita Federal
+(capital social, porte, idade, CNAE) e presença nacional no PNCP (contratos com todos os órgãos).</p>
+
+<div class="card" style="margin-bottom:6px">
+  <label>
+    <span class="small">Fornecedor (top da carteira STF por valor)</span><br>
+    <select id="cnpjSel" style="min-width:340px;margin-top:3px"></select>
+  </label>
+</div>
+<div class="grid2">
+  <div class="card" id="supplierCard"></div>
+  <div class="card">
+    <h3 class="ct">Verificações de idoneidade</h3>
+    <p class="csub">O que já é real nesta versão e o que depende de credenciamento institucional</p>
+    <div id="sanList"></div>
+  </div>
+</div>
+
+<!-- =============== MÓDULO 3 =============== -->
+<h2 class="mod"><span class="mnum">MÓDULO 3</span> Alertas de Risco — Contratos Reais · Res. 781/2022</h2>
+<p class="moddesc">Todos os contratos do STF publicados no PNCP desde 2023, classificados nas escalas de
+probabilidade e impacto da Res. 781/2022 por um <strong>escore heurístico transparente (baseline)</strong>.
+O painel de fatores explica cada classificação; a coluna de desfecho mostra o que <em>realmente</em>
+aconteceu (aditivos, acréscimos, rescisões) — rótulo que alimentará o modelo supervisionado.</p>
+
+<div class="grid2">
+  <div class="card">
+    <h3 class="ct">Semáforo de Risco</h3>
+    <p class="csub" id="procCount"></p>
+    <div style="overflow-x:auto;max-height:560px;overflow-y:auto"><table id="procTbl" aria-label="Contratos classificados por risco">
+      <thead><tr>
+        <th>Contrato</th><th>Objeto</th><th class="num">Valor global</th><th>Risco</th>
+      </tr></thead><tbody></tbody>
+    </table></div>
+  </div>
+
+  <div>
+    <div class="card" style="margin-bottom:14px">
+      <h3 class="ct" id="shapTitle">Fatores da classificação</h3>
+      <p class="csub" id="shapSub">Selecione um contrato ao lado para ver os fatores</p>
+      <div id="shapChart"></div>
+      <div id="outcomeBox"></div>
+      <div class="gov" id="govRow" style="display:none">
+        <button class="gbtn validate" id="btnValidate">✓ Validar Risco</button>
+        <button class="gbtn fp" id="btnFP">✕ Falso Positivo</button>
+        <span class="gov-note">Human-in-the-loop: decisão registrada localmente nesta PoC.</span>
+      </div>
+      <div id="govDone"></div>
+    </div>
+
+    <div class="card">
+      <h3 class="ct">Matriz de Riscos — Probabilidade × Impacto</h3>
+      <p class="csub">Distribuição real dos contratos filtrados nas escalas da Res. 781/2022</p>
+      <div id="matrix"></div>
+      <div class="legend" id="matrixLegend"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <h3 class="ct" style="margin:0">Visão em tabela (acessibilidade)</h3>
+    <button class="tbl-toggle" id="tblToggle" aria-expanded="false">mostrar dados completos</button>
+  </div>
+  <div id="fullTbl" hidden style="overflow-x:auto;margin-top:10px;max-height:600px;overflow-y:auto"></div>
+</div>
+
+<footer id="foot"></footer>
+</div>
+
+<div id="tip" role="tooltip"></div>
+
+<script>
+"use strict";
+const DADOS = /*__DADOS__*/null;
+
+const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const BRLc = v => v>=1e6 ? 'R$ '+(v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi'
+             : v>=1e3 ? 'R$ '+(v/1e3).toLocaleString('pt-BR',{maximumFractionDigits:0})+' mil'
+             : BRL.format(v);
+const PCT = v => (v>0?'+':'')+ (v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
+const $ = s => document.querySelector(s);
+const esc = s => { const d=document.createElement('span'); d.textContent=s??''; return d.innerHTML; };
+const median = a => { const s=[...a].sort((x,y)=>x-y), m=s.length>>1; return s.length%2? s[m] : (s[m-1]+s[m])/2; };
+const quantile = (a,q) => { const s=[...a].sort((x,y)=>x-y); const p=(s.length-1)*q, b=Math.floor(p); return s[b]+(s[b+1]!==undefined?(s[b+1]-s[b])*(p-b):0); };
+
+const NIVEIS = {
+ 'Baixo':   {cls:'rb-baixo',    color:'var(--st-good)',    wash:'var(--wash-good)'},
+ 'Moderado':{cls:'rb-moderado', color:'var(--st-warn)',    wash:'var(--wash-warn)'},
+ 'Elevado': {cls:'rb-elevado',  color:'var(--st-serious)', wash:'var(--wash-serious)'},
+ 'Crítico': {cls:'rb-critico',  color:'var(--st-crit)',    wash:'var(--wash-crit)'},
+};
+const ICONS = {
+ 'Baixo':'<svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5l2.6 2.6L10 3.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+ 'Moderado':'<svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+ 'Elevado':'<svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5L11 10.5H1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+ 'Crítico':'<svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+};
+const badge = n => `<span class="rbadge ${NIVEIS[n].cls}">${ICONS[n]} ${n}</span>`;
+const nivelDe = p => { const s=p.prob*p.imp; return s<=4?'Baixo':s<=9?'Moderado':s<=16?'Elevado':'Crítico'; };
+
+const tip = $('#tip');
+function showTip(html,x,y){
+  tip.innerHTML=html; tip.style.display='block';
+  const r=tip.getBoundingClientRect();
+  let left=x+14, top=y+14;
+  if(left+r.width>innerWidth-8) left=x-r.width-12;
+  if(top+r.height>innerHeight-8) top=y-r.height-12;
+  tip.style.left=left+'px'; tip.style.top=top+'px';
+}
+const hideTip = () => tip.style.display='none';
+
+const state = { ano:'', cat:'', niv:'', selProc:null, decisions:{} };
+const PROCS = DADOS.processos;
+const FORN = DADOS.fornecedores;
+const PRECOS = DADOS.precos;
+
+const anoDe = p => (p.assinatura||'').slice(0,4);
+const filtered = () => PROCS.filter(p =>
+  (!state.ano || anoDe(p)===state.ano) &&
+  (!state.cat || p.categoria===state.cat) &&
+  (!state.niv || p.nivel===state.niv));
+
+/* ================= KPIs ================= */
+function renderKPIs(){
+  const ps = filtered();
+  const high = ps.filter(p=>p.nivel==='Elevado'||p.nivel==='Crítico');
+  const adv = ps.filter(p=>p.desfecho.desfecho_adverso);
+  const nAdit = ps.reduce((s,p)=>s+p.desfecho.n_aditivos,0);
+  const valTotal = ps.reduce((s,p)=>s+p.valor,0);
+  $('#kpiRow').innerHTML = `
+   <div class="card kpi"><div class="klabel">Contratos reais monitorados</div>
+     <div class="kvalue">${ps.length}</div>
+     <div class="kdelta">${BRLc(valTotal)} em valor global (PNCP)</div></div>
+   <div class="card kpi"><div class="klabel">Risco Elevado ou Crítico</div>
+     <div class="kvalue">${high.length}</div>
+     <div class="kdelta"><span class="${high.length?'up-bad':'up-good'}">${ps.length?Math.round(100*high.length/ps.length):0}%</span> do filtro atual</div></div>
+   <div class="card kpi"><div class="klabel">Desfecho adverso observado</div>
+     <div class="kvalue">${adv.length}</div>
+     <div class="kdelta">rescisão, acréscimo &gt;25% ou prorrogação &gt;1 ano</div></div>
+   <div class="card kpi"><div class="klabel">Termos aditivos registrados</div>
+     <div class="kvalue">${nAdit}</div>
+     <div class="kdelta">no conjunto filtrado</div></div>`;
+}
+
+/* ================= MÓDULO 1 ================= */
+function renderPriceCard(){
+  const it = PRECOS[+$('#itemSel').value];
+  if(!it){ $('#priceCard').innerHTML='<p class="small">Sem itens com referência nacional coletada.</p>'; return; }
+  const med = it.mediana, q1=quantile(it.precos,.25), q3=quantile(it.precos,.75);
+  const stf = it.estimado_stf;
+  const dif = (stf-med)/med;
+  let fl, txt;
+  if(dif > .25){ fl='rb-critico'; txt='Muito acima da mediana — diligenciar'; }
+  else if(dif > .05){ fl='rb-elevado'; txt='Acima da mediana nacional'; }
+  else if(dif < -.25){ fl='rb-moderado'; txt='Muito abaixo — verificar exequibilidade/especificação'; }
+  else { fl='rb-baixo'; txt='Compatível com o mercado'; }
+  $('#priceCard').innerHTML = `
+   <div style="display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px">
+     <div><div class="small">Mediana nacional homologada</div>
+       <div style="font-size:24px;font-weight:600">${BRL.format(med)}</div>
+       <div class="small">IQR ${BRL.format(q1)} – ${BRL.format(q3)} · ${it.n_amostra} homologações federais</div></div>
+     <div><div class="small">Estimativa STF</div>
+       <div style="font-size:24px;font-weight:600">${BRL.format(stf)}</div>
+       <div class="small">${esc(it.un||'')}</div></div>
+     <div style="margin-left:auto;text-align:right">
+       <span class="rbadge ${fl}" style="font-size:13px">${PCT(dif)} vs. mediana</span>
+       <div class="small" style="margin-top:4px">${txt}</div></div>
+   </div>`;
+  renderPriceStrip(it, stf, med, q1, q3);
+}
+
+function renderPriceStrip(it, stf, med, q1, q3){
+  const W=520,H=110,L=14,R=14,y=58;
+  const shown = it.precos;
+  const lo=Math.min(...shown,stf)*0.97, hi=Math.max(...shown,stf)*1.03;
+  const x=v=>L+(v-lo)/(hi-lo||1)*(W-L-R);
+  const dots = shown.map(v=>
+    `<circle class="pdot" data-v="${v}" cx="${x(v).toFixed(1)}" cy="${y}" r="3.6"
+       fill="var(--seq-400)" stroke="var(--surface)" stroke-width="1" opacity=".6"/>`).join('');
+  $('#priceStrip').innerHTML = `
+  <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Distribuição real dos preços homologados com marcadores da mediana e da estimativa do STF" style="width:100%;height:auto;margin-top:4px">
+    <rect x="${x(q1).toFixed(1)}" y="${y-13}" width="${(x(q3)-x(q1)).toFixed(1)}" height="26" rx="4" fill="var(--seq-250)" opacity=".22"/>
+    <line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" class="baseline"/>
+    ${dots}
+    <line x1="${x(med).toFixed(1)}" x2="${x(med).toFixed(1)}" y1="${y-24}" y2="${y+24}" stroke="var(--seq-550)" stroke-width="2"/>
+    <text x="${x(med).toFixed(1)}" y="${y-30}" text-anchor="middle" class="lbl-t">mediana</text>
+    <line x1="${x(stf).toFixed(1)}" x2="${x(stf).toFixed(1)}" y1="${y-18}" y2="${y+30}" stroke="var(--div-pos)" stroke-width="2"/>
+    <circle cx="${x(stf).toFixed(1)}" cy="${y+30}" r="4.5" fill="var(--div-pos)" stroke="var(--surface)" stroke-width="2"/>
+    <text x="${x(stf).toFixed(1)}" y="${y+46}" text-anchor="middle" class="val-t">STF ${BRLc(stf)}</text>
+    <text x="${L}" y="${H-2}" class="axis-t">${BRLc(lo)}</text>
+    <text x="${W-R}" y="${H-2}" text-anchor="end" class="axis-t">${BRLc(hi)}</text>
+  </svg>
+  <div class="legend">
+    <span><span class="sw" style="background:var(--seq-400)"></span>homologações federais (reais)</span>
+    <span><span class="sw" style="background:var(--seq-250);opacity:.5"></span>faixa interquartil</span>
+    <span><span class="sw" style="background:var(--div-pos)"></span>estimativa STF</span>
+  </div>`;
+  document.querySelectorAll('#priceStrip .pdot').forEach(dt=>{
+    dt.addEventListener('pointermove',e=>showTip(`<div class="tv">${BRL.format(+dt.dataset.v)}</div><div class="tl">homologação federal · compras.gov.br</div>`,e.clientX,e.clientY));
+    dt.addEventListener('pointerleave',hideTip);
+  });
+}
+
+function renderItemTbl(){
+  $('#itemTbl').innerHTML = `<table aria-label="Itens do STF com referência nacional">
+   <thead><tr><th>Código · item</th><th class="num">STF</th><th class="num">Mediana nac.</th><th class="num">Δ</th></tr></thead>
+   <tbody>${PRECOS.map((it,i)=>{
+     const dif=(it.estimado_stf-it.mediana)/it.mediana;
+     const c = dif>.25?'var(--st-crit)':dif>.05?'#9c3d14':dif<-.25?'#8a5a00':'var(--good-text)';
+     return `<tr class="prow" data-i="${i}">
+       <td>${esc(it.cod)} <span class="small">${it.tipo==='M'?'CATMAT':'CATSER'}</span><div class="small">${esc(it.desc.slice(0,90))}</div></td>
+       <td class="num">${BRLc(it.estimado_stf)}</td>
+       <td class="num">${BRLc(it.mediana)}</td>
+       <td class="num" style="color:${c};font-weight:600">${PCT(dif)}</td></tr>`;
+   }).join('')}</tbody></table>`;
+  document.querySelectorAll('#itemTbl .prow').forEach(r=>r.addEventListener('click',()=>{
+    $('#itemSel').value = r.dataset.i; renderPriceCard();
+  }));
+}
+
+/* ================= MÓDULO 2 ================= */
+function renderSupplier(){
+  const s = FORN[+$('#cnpjSel').value];
+  if(!s){ $('#supplierCard').innerHTML=''; return; }
+  const serie = s.serie_anual||[];
+  const maxC = Math.max(...serie.map(a=>a.n),1);
+  const bw=34,gap=14,cl=44,ch=120,base=ch-26;
+  const bars = serie.map((a,i)=>{
+    const h = a.n? Math.max(6, a.n/maxC*(base-18)) : 2;
+    const xx = cl + i*(bw+gap);
+    return `<g class="cbar" data-y="${a.ano}" data-v="${a.n}">
+      <rect x="${xx}" y="${base-h}" width="${bw}" height="${h}" fill="var(--seq-400)" rx="4"/>
+      <rect x="${xx-4}" y="0" width="${bw+8}" height="${base}" fill="transparent"/>
+      <text x="${xx+bw/2}" y="${base+16}" text-anchor="middle" class="axis-t">${a.ano}</text>
+      ${a.n===maxC? `<text x="${xx+bw/2}" y="${base-h-6}" text-anchor="middle" class="val-t">${a.n}</text>`:''}
+    </g>`;
+  }).join('');
+  const razao = s.razao_capital_volume;
+  const alerta = razao!==null && razao < 0.02;
+  $('#supplierCard').innerHTML = `
+   <h3 class="ct">${esc(s.nome)}</h3>
+   <p class="csub">CNPJ ${s.ni.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5')}
+     · ${esc(s.municipio||'')}/${esc(s.uf||'')} · ${esc(s.porte||'')}</p>
+   <div style="display:flex;gap:26px;margin:6px 0 10px;flex-wrap:wrap">
+     <div><div class="small">Capital social (Receita)</div><div style="font-weight:600">${BRLc(s.capital_social||0)}</div></div>
+     <div><div class="small">Idade do CNPJ</div><div style="font-weight:600">${s.idade_anos??'—'} anos</div></div>
+     <div><div class="small">Volume nacional (PNCP)</div><div style="font-weight:600">${BRLc(s.vol_nacional||0)}</div></div>
+     <div><div class="small">No STF</div><div style="font-weight:600">${BRLc(s.valor_no_stf||0)}</div></div>
+   </div>
+   <div class="small" style="margin-bottom:10px">CNAE principal: ${esc(s.cnae||'—')}</div>
+   ${alerta? `<div class="notice">Capital social equivale a ${(razao*100).toFixed(1)}% do volume contratado no PNCP — gatilho de diligência (nunca inabilitação automática).</div>`:''}
+   <h3 class="ct" style="margin-top:12px">Contratos por ano <span class="small" style="font-weight:400">· todos os órgãos (PNCP, dados reais)</span></h3>
+   ${serie.length? `<svg viewBox="0 0 ${cl+serie.length*(bw+gap)} ${ch}" style="width:100%;max-width:330px;height:auto" role="img"
+     aria-label="Contratos firmados por ano de ${esc(s.nome)}">
+     <line x1="${cl-6}" x2="${cl+serie.length*(bw+gap)-6}" y1="${base}" y2="${base}" class="baseline"/>${bars}
+   </svg>`:'<p class="small">Sem contratos localizados na busca nacional.</p>'}`;
+  document.querySelectorAll('#supplierCard .cbar').forEach(g=>{
+    g.addEventListener('pointermove',e=>showTip(`<div class="tv">${g.dataset.v} contrato${g.dataset.v==1?'':'s'}</div><div class="tl">${g.dataset.y} · PNCP nacional</div>`,e.clientX,e.clientY));
+    g.addEventListener('pointerleave',hideTip);
+  });
+  const ativa = (s.situacao||'').toUpperCase()==='ATIVA';
+  const rows = [
+    ['Situação cadastral — Receita Federal (dado real)', ativa?'ok':'bad', ativa?'Ativa':esc(s.situacao||'Verificar')],
+    ['Contratos vigentes no PNCP (dado real)', 'ok', `${s.contratos_vigentes} vigentes de ${s.contratos_nacionais} localizados`],
+    ['CEIS/CNEP — sanções (Portal da Transparência)', 'na', 'Próxima etapa — requer chave de API institucional'],
+    ['CNDT — débitos trabalhistas (TST)', 'na', 'Próxima etapa — consulta consolidada TCU'],
+    ['SICAF — impedimentos', 'na', 'Próxima etapa — acesso institucional'],
+  ];
+  $('#sanList').innerHTML = rows.map(([n,cls,st])=>`
+   <div class="san-row">
+     <span class="san-ic san-${cls==='ok'?'ok':cls==='bad'?'bad':'na'}">${cls==='ok'?ICONS['Baixo']:cls==='bad'?ICONS['Crítico']:'…'}</span>
+     <span class="san-name">${n}</span>
+     <span class="san-st ${cls}">${st}</span>
+   </div>`).join('') +
+   `<div class="notice">Conforme a análise crítica (2.3): produção deve usar APIs oficiais e a consulta
+   consolidada de certidões do TCU — não raspagem. Os itens pendentes exigem credenciamento do órgão.</div>`;
+}
+
+/* ================= MÓDULO 3 ================= */
+const scoreDe = p => p.prob*p.imp;
+function renderProcs(){
+  const ps = [...filtered()].sort((a,b)=>scoreDe(b)-scoreDe(a)||b.valor-a.valor);
+  $('#procCount').textContent = `${ps.length} contrato${ps.length===1?'':'s'} no filtro · ordenados por risco · clique para explicar`;
+  const tb = $('#procTbl tbody');
+  tb.innerHTML = ps.slice(0,400).map(p=>{
+    const done = state.decisions[p.pncp];
+    return `<tr class="prow" tabindex="0" data-id="${esc(p.pncp)}" aria-selected="${state.selProc===p.pncp}">
+      <td style="white-space:nowrap;font-variant-numeric:tabular-nums">${esc(p.id)}${done?` <span style="font-size:11px">${done==='ok'?'✓':'✕'}</span>`:''}
+        <div class="small">${esc(p.assinatura||'')}</div></td>
+      <td>${esc(p.obj.slice(0,110))}${p.obj.length>110?'…':''}<div class="small">${esc(p.forn_nome||'')}</div></td>
+      <td class="num">${BRLc(p.valor)}</td>
+      <td>${badge(p.nivel)}</td></tr>`;
+  }).join('') || `<tr><td colspan="4" class="small" style="padding:16px">Nenhum contrato no filtro.</td></tr>`;
+  tb.querySelectorAll('.prow').forEach(r=>{
+    const go = ()=>{ state.selProc=r.dataset.id; renderProcs(); renderShap(); };
+    r.addEventListener('click',go);
+    r.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();go();} });
+  });
+}
+
+function renderShap(){
+  const p = PROCS.find(x=>x.pncp===state.selProc);
+  const box=$('#shapChart'), gov=$('#govRow'), done=$('#govDone'), out=$('#outcomeBox');
+  if(!p){ box.innerHTML=''; out.innerHTML=''; gov.style.display='none'; done.innerHTML='';
+    $('#shapTitle').textContent='Fatores da classificação';
+    $('#shapSub').textContent='Selecione um contrato ao lado para ver os fatores'; return; }
+  $('#shapTitle').innerHTML = `Contrato ${esc(p.id)} ${badge(p.nivel)}`;
+  $('#shapSub').textContent = `probabilidade ${p.prob}/5 · impacto ${p.imp}/5 (Res. 781/2022) · escore heurístico transparente — não é ML`;
+  const fs = p.fatores.filter(f=>f[1]!==null).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,7);
+  const W=520,rowH=40,top=26,H=top+Math.max(fs.length,1)*rowH+30;
+  const maxAbs = Math.max(...fs.map(f=>Math.abs(f[1])),.5);
+  const mid=W*0.52;
+  const rows = fs.map((f,i)=>{
+    const y=top+i*rowH;
+    const w=Math.abs(f[1])*(W*0.30)/maxAbs;
+    const pos=f[1]>0;
+    const bx=pos? mid+1 : mid-1-w;
+    const vx=pos? mid+w+8 : mid-w-8;
+    return `<g class="srow" data-f="${esc(f[0])}" data-v="${f[1]}">
+      <rect x="${bx.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="16" rx="4" fill="${pos?'var(--div-pos)':'var(--div-neg)'}"/>
+      <text x="${vx.toFixed(1)}" y="${y+12.5}" class="val-t" text-anchor="${pos?'start':'end'}">${pos?'+':'−'}${Math.abs(f[1]).toFixed(1)}</text>
+      <text x="${mid}" y="${y-4}" class="lbl-t" text-anchor="middle">${esc(f[0].length>76? f[0].slice(0,74)+'…' : f[0])}</text>
+      <rect x="0" y="${y-16}" width="${W}" height="${rowH}" fill="transparent"/>
+    </g>`;
+  }).join('');
+  const fatorImp = p.fatores.find(f=>f[1]===null);
+  box.innerHTML = `
+   <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img"
+     aria-label="Fatores do escore de risco do contrato ${esc(p.id)}">
+     <line x1="${mid}" x2="${mid}" y1="${top-16}" y2="${H-24}" class="baseline"/>
+     ${rows}
+     <text x="${mid-8}" y="${H-8}" text-anchor="end" class="axis-t">← reduz a probabilidade</text>
+     <text x="${mid+8}" y="${H-8}" class="axis-t">aumenta →</text>
+   </svg>
+   ${fatorImp? `<p class="small" style="margin-top:4px">${esc(fatorImp[0])}</p>`:''}`;
+  box.querySelectorAll('.srow').forEach(g=>{
+    g.addEventListener('pointermove',e=>{
+      const v=+g.dataset.v;
+      showTip(`<div class="tv">${v>0?'+':'−'}${Math.abs(v).toFixed(1)} <span style="font-weight:400">pts de probabilidade</span></div><div class="tl">${esc(g.dataset.f)}</div>`,e.clientX,e.clientY);
+    });
+    g.addEventListener('pointerleave',hideTip);
+  });
+  const dsc = p.desfecho;
+  const mlBox = p.ml ? `
+   <h3 class="ct" style="margin-top:12px">Modelo supervisionado (ML)</h3>
+   <div style="display:flex;gap:14px;align-items:center;margin-top:6px;flex-wrap:wrap">
+     <div style="font-size:26px;font-weight:600">${(p.ml.prob*100).toFixed(0)}%</div>
+     <div class="small" style="max-width:340px">probabilidade calibrada de desfecho adverso
+       em até 12 meses — ${esc((DADOS.resumo.modelo_ml||{}).nome||'modelo')}, treinado em
+       ${esc((DADOS.resumo.modelo_ml||{}).treino||'dados reais do PNCP')}</div>
+   </div>
+   ${(p.ml.fatores||[]).length? `<div class="small" style="margin-top:6px">Principais fatores
+     (contribuições em log-odds da regressão logística):
+     ${p.ml.fatores.map(f=>`<span style="white-space:nowrap">${esc(f[0])}
+       <strong style="color:${f[1]>0?'var(--div-pos)':'var(--div-neg)'}">${f[1]>0?'+':''}${f[1]}</strong></span>`).join(' · ')}</div>`:''}
+  `:'';
+  out.innerHTML = mlBox + `
+   <h3 class="ct" style="margin-top:12px">Desfecho real observado (PNCP)</h3>
+   <div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:6px">
+     <div><div class="small">Termos aditivos</div><div style="font-weight:600">${dsc.n_aditivos}</div></div>
+     <div><div class="small">Acréscimo de valor</div><div style="font-weight:600">${PCT(dsc.acrescimo_valor_pct)}</div></div>
+     <div><div class="small">Prorrogação</div><div style="font-weight:600">${dsc.prazo_extra_dias>0? dsc.prazo_extra_dias+' dias':'—'}</div></div>
+     <div><div class="small">Rescisão/extinção</div><div style="font-weight:600;color:${dsc.rescindido?'var(--st-crit)':'var(--good-text)'}">${dsc.rescindido?'Sim':'Não'}</div></div>
+     <div><div class="small">Rótulo p/ ML</div><div style="font-weight:600">${dsc.desfecho_adverso? '<span class="rbadge rb-critico">adverso</span>':'<span class="rbadge rb-baixo">regular</span>'}</div></div>
+   </div>
+   <p class="small" style="margin-top:6px">Vigência ${esc(p.vig_ini||'?')} → ${esc(p.vig_fim||'?')} ·
+     <a href="https://pncp.gov.br/app/contratos?q=${encodeURIComponent(p.pncp)}" target="_blank" rel="noopener" style="color:inherit">ver no PNCP ↗</a></p>`;
+  const dec = state.decisions[p.pncp];
+  if(dec){ gov.style.display='none';
+    done.innerHTML = `<p class="gov-done ${dec==='ok'?'ok':'fp'}" style="margin-top:12px">
+      ${dec==='ok'?'✓ Risco validado pelo servidor':'✕ Marcado como falso positivo'} — registro local (PoC).</p>`;
+  } else { gov.style.display='flex'; done.innerHTML=''; }
+}
+$('#btnValidate').addEventListener('click',()=>decide('ok'));
+$('#btnFP').addEventListener('click',()=>decide('fp'));
+function decide(kind){
+  if(!state.selProc) return;
+  state.decisions[state.selProc]=kind;
+  renderProcs(); renderShap();
+}
+
+function renderMatrix(){
+  const ps = filtered();
+  const cnt = {};
+  ps.forEach(p=>{ const k=p.prob+'-'+p.imp; (cnt[k]=cnt[k]||[]).push(p); });
+  let html = `<div class="small" style="margin-bottom:4px">Impacto ↑</div>`;
+  html += `<div class="hm" style="grid-template-columns:24px repeat(5,1fr)">`;
+  for(let imp=5; imp>=1; imp--){
+    html += `<div class="hm-lab">${imp}</div>`;
+    for(let prob=1; prob<=5; prob++){
+      const s=prob*imp;
+      const n = s<=4?'Baixo':s<=9?'Moderado':s<=16?'Elevado':'Crítico';
+      const list=cnt[prob+'-'+imp]||[];
+      html += `<div class="hm-cell" style="background:${NIVEIS[n].wash}"
+        data-n="${list.length}" data-lv="${n}" data-pi="P${prob} × I${imp}">
+        ${list.length? `<span>${list.length}</span>`:''}</div>`;
+    }
+  }
+  html += `<div></div>` + [1,2,3,4,5].map(p=>`<div class="hm-lab">${p}</div>`).join('');
+  html += `</div><div class="small" style="text-align:center;margin-top:4px">Probabilidade →</div>`;
+  $('#matrix').innerHTML = html;
+  $('#matrixLegend').innerHTML = Object.entries(NIVEIS).map(([n,v])=>
+    `<span><span class="sw" style="background:${v.color}"></span>${n}</span>`).join('') +
+    `<span class="small">células = nº de contratos reais</span>`;
+  document.querySelectorAll('#matrix .hm-cell').forEach(c=>{
+    if(!+c.dataset.n) return;
+    c.addEventListener('pointermove',e=>showTip(
+      `<div class="tv">${c.dataset.n} contrato${c.dataset.n==1?'':'s'}</div>
+       <div class="tl">${c.dataset.pi} · nível ${c.dataset.lv}</div>`, e.clientX,e.clientY));
+    c.addEventListener('pointerleave',hideTip);
+  });
+}
+
+function renderFullTbl(){
+  const ps = filtered();
+  $('#fullTbl').innerHTML = `<table>
+   <thead><tr><th>Contrato PNCP</th><th>Objeto</th><th>Fornecedor</th><th class="num">Valor (R$)</th>
+   <th class="num">P</th><th class="num">I</th><th>Nível</th><th class="num">Aditivos</th><th>Desfecho</th></tr></thead>
+   <tbody>${ps.map(p=>`<tr>
+     <td style="font-variant-numeric:tabular-nums">${esc(p.pncp)}</td>
+     <td>${esc(p.obj.slice(0,120))}</td><td>${esc(p.forn_nome||'')}</td>
+     <td class="num">${p.valor.toLocaleString('pt-BR')}</td>
+     <td class="num">${p.prob}</td><td class="num">${p.imp}</td><td>${badge(p.nivel)}</td>
+     <td class="num">${p.desfecho.n_aditivos}</td>
+     <td>${p.desfecho.desfecho_adverso?'Adverso':'Regular'}</td></tr>`).join('')}
+   </tbody></table>`;
+}
+
+/* ================= wiring ================= */
+function refreshAll(){ renderKPIs(); renderProcs(); renderShap(); renderMatrix(); renderFullTbl(); }
+
+const anos = [...new Set(PROCS.map(anoDe))].filter(Boolean).sort();
+$('#anoChips').innerHTML = `<button class="chip achip" data-ano="" aria-pressed="true">Todos</button>` +
+  anos.map(a=>`<button class="chip achip" data-ano="${a}" aria-pressed="false">${a}</button>`).join('');
+document.querySelectorAll('.achip').forEach(ch=>ch.addEventListener('click',()=>{
+  document.querySelectorAll('.achip').forEach(c=>c.setAttribute('aria-pressed','false'));
+  ch.setAttribute('aria-pressed','true');
+  state.ano = ch.dataset.ano;
+  refreshAll();
+}));
+[...new Set(PROCS.map(p=>p.categoria))].filter(Boolean).sort().forEach(c=>{
+  const o=document.createElement('option'); o.value=c; o.textContent=c; $('#catSel').appendChild(o);
+});
+$('#catSel').addEventListener('change',e=>{ state.cat=e.target.value; refreshAll(); });
+$('#nivSel').addEventListener('change',e=>{ state.niv=e.target.value; refreshAll(); });
+
+PRECOS.forEach((it,i)=>{ const o=document.createElement('option'); o.value=i;
+  o.textContent=`${it.cod} · ${it.desc.slice(0,70)}`; $('#itemSel').appendChild(o); });
+$('#itemSel').addEventListener('change',renderPriceCard);
+
+FORN.forEach((s,i)=>{ const o=document.createElement('option'); o.value=i;
+  o.textContent=`${s.nome} — ${BRLc(s.valor_no_stf||0)} no STF`; $('#cnpjSel').appendChild(o); });
+$('#cnpjSel').addEventListener('change',renderSupplier);
+
+$('#tblToggle').addEventListener('click',()=>{
+  const t=$('#fullTbl'); const open=t.hidden;
+  t.hidden=!open; $('#tblToggle').textContent = open? 'ocultar dados completos':'mostrar dados completos';
+  $('#tblToggle').setAttribute('aria-expanded', String(open));
+});
+$('#themeBtn').addEventListener('click',()=>{
+  const r=document.documentElement;
+  const cur=r.getAttribute('data-theme');
+  const next = cur==='dark' ? 'light' : cur==='light' ? null : 'dark';
+  if(next) r.setAttribute('data-theme',next); else r.removeAttribute('data-theme');
+});
+
+const R = DADOS.resumo;
+$('#badgeReal').textContent = `● Dados reais · PNCP · coleta ${R.coletado_em}`;
+$('#foot').innerHTML = `
+  <strong>ANTECIPA</strong> — Produto Técnico-Tecnológico (PTT) · versão com <strong>dados reais</strong>:
+  ${R.n_contratos} contratos do ${esc(R.orgao)} publicados no PNCP desde 2023
+  (${BRLc(R.valor_total)}), ${R.n_aditivos} termos aditivos, ${R.n_rescindidos} rescisões/extinções,
+  ${R.n_desfecho_adverso} contratos (${R.pct_desfecho_adverso}%) com desfecho adverso observado.<br>
+  ${R.modelo_ml? `Modelo preditivo: ${esc(R.modelo_ml.nome)} — ${esc(R.modelo_ml.treino)};
+  explicações por ${esc(R.modelo_ml.explicacao)}. Métricas completas em antecipa-real/dados/processados/relatorio_modelo.md.<br>`:''}
+  Fontes: API de Consulta do PNCP (contratos e termos) · API de busca do PNCP (presença nacional de fornecedores)
+  · API de pesquisa de preços do compras.gov.br (referências CATMAT/CATSER) · Dados abertos do CNPJ/Receita Federal
+  (minhareceita.org). Classificação: escore heurístico transparente nas escalas da Res. STF 781/2022 —
+  baseline sobre o qual o modelo supervisionado (treinado no desfecho real, ver dataset_ml.csv) será avaliado.<br>
+  Projeto de dissertação: “Do Controle Reativo à Antecipação: IA para Gestão Preditiva de Riscos em Compras
+  Públicas no STF” — Cristina Harumi Matsunaga · Mestrado Profissional em Administração Pública, FACE/UnB ·
+  Orientadora: Profa. Dra. Marina Figueiredo Moreira.`;
+
+/* boot */
+$('#itemSel').value = 0;
+$('#cnpjSel').value = 0;
+renderPriceCard(); renderItemTbl(); renderSupplier(); refreshAll();
+</script>
+</body>
+</html>

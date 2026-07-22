@@ -1,0 +1,5 @@
+# artefatos locais / renderizações
+.Rhistory
+README.html
+*.Rproj.user
+__pycache__/

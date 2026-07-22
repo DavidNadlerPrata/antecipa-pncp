@@ -1,0 +1,27 @@
+{
+ "metricas": {
+  "Regressão Logística": {
+   "limiar": 0.488,
+   "precision": 0.052,
+   "recall": 0.647,
+   "f1": 0.096,
+   "pr_auc": 0.065,
+   "roc_auc": 0.755,
+   "alertas": 1056,
+   "precision_at_100": 0.09,
+   "recall_at_100": 0.106
+  },
+  "Gradient Boosting": {
+   "limiar": 0.712,
+   "precision": 0.109,
+   "recall": 0.494,
+   "f1": 0.179,
+   "pr_auc": 0.139,
+   "roc_auc": 0.806,
+   "alertas": 384,
+   "precision_at_100": 0.16,
+   "recall_at_100": 0.188
+  },
+  "_prevalencia_teste": 0.021
+ }
+}
