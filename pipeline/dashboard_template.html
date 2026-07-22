@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>ANTECIPA — Dashboard com Dados Reais do PNCP · STF</title>
 <style>
 :root{
@@ -133,10 +134,19 @@ footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--grid);font-si
 .legend{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--ink-2);margin:4px 0 8px;flex-wrap:wrap}
 .legend .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .notice{font-size:12px;color:var(--ink-2);border-left:3px solid var(--s4);padding:6px 10px;margin-top:10px;background:color-mix(in srgb,var(--s4) 7%,transparent);border-radius:0 6px 6px 0}
+.aviso-topo{font-size:12.5px;line-height:1.5;color:var(--ink-2);border:1px solid var(--s4);border-left:4px solid var(--s4);background:color-mix(in srgb,var(--s4) 9%,transparent);padding:9px 14px;border-radius:8px;margin:14px 0 4px}
+.aviso-topo strong{color:var(--ink)}
 </style>
 </head>
 <body>
 <div class="wrap">
+
+<div class="aviso-topo" role="note">
+  <strong>Protótipo acadêmico</strong> · dados públicos do PNCP, compras.gov.br e Receita Federal ·
+  os escores de risco são gerados por modelo estatístico e <strong>não constituem juízo, acusação ou
+  restrição sobre nenhuma empresa</strong>: servem apenas para priorizar diligência humana.
+  Trabalho de dissertação (FACE/UnB) — não é sistema oficial do STF nem parecer jurídico.
+</div>
 
 <header class="app">
   <div class="logo">A</div>
