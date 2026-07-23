@@ -3,3 +3,8 @@
 README.html
 *.Rproj.user
 __pycache__/
+
+# relatório Word: documento nominal endereçado à pesquisadora/orientadora.
+# Gravado em ../ (fora desta pasta) por gera_relatorio.py; nunca publicar.
+# Entrada defensiva caso o arquivo seja movido para dentro do repositório.
+*.docx

@@ -126,6 +126,7 @@ python treina_stf_vs_multi.py # experimento só-STF × multi-órgão (bootstrap)
 python diagrama_calibracao.py # diagrama de confiabilidade (figura + métricas)
 python compara_explicacoes.py # SHAP × modelo substituto (figura + concordância)
 python publica_modelo_v2.py   # v2 calibrado p/ dashboard (ml_stf_v2.json)
+python gera_relatorio.py      # relatório Word (grava em ../, fora do repo)
 
 # Dashboard
 python processa.py            # consolida STF + predições (v2 se existir, senão v1)
