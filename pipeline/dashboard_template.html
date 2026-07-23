@@ -136,6 +136,10 @@ footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--grid);font-si
 .notice{font-size:12px;color:var(--ink-2);border-left:3px solid var(--s4);padding:6px 10px;margin-top:10px;background:color-mix(in srgb,var(--s4) 7%,transparent);border-radius:0 6px 6px 0}
 .aviso-topo{font-size:12.5px;line-height:1.5;color:var(--ink-2);border:1px solid var(--s4);border-left:4px solid var(--s4);background:color-mix(in srgb,var(--s4) 9%,transparent);padding:9px 14px;border-radius:8px;margin:14px 0 4px}
 .aviso-topo strong{color:var(--ink)}
+.thsub{font-weight:400;text-transform:none;letter-spacing:0;font-size:10.5px;color:var(--muted);margin-top:1px}
+.mlcell{display:flex;align-items:center;gap:7px;justify-content:flex-end}
+.mlbar{width:38px;height:6px;border-radius:3px;background:var(--div-mid);overflow:hidden;flex:none}
+.mlbar>span{display:block;height:100%;border-radius:3px;background:var(--seq-400)}
 </style>
 </head>
 <body>
@@ -239,41 +243,40 @@ ex-ante, mas probabilidade pura, sem ponderação por impacto.<br>
 eles é exatamente o que o contrato acumulou de problemas após assinado — a seta “↑ agravou” marca esses
 casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que o modelo foi treinado.</span></p>
 
-<div class="grid2">
-  <div class="card">
-    <h3 class="ct">Semáforo — Res. 781/2022 em duas leituras</h3>
-    <p class="csub" id="procCount"></p>
-    <div style="overflow-x:auto;max-height:560px;overflow-y:auto"><table id="procTbl" aria-label="Contratos por nível de risco ex-ante e observado nas escalas da Resolução 781/2022">
-      <thead><tr>
-        <th>Contrato</th><th>Objeto</th><th class="num">Valor global</th>
-        <th>Ex-ante<div class="small" style="font-weight:400;text-transform:none;letter-spacing:0">na assinatura</div></th>
-        <th>Observado<div class="small" style="font-weight:400;text-transform:none;letter-spacing:0">hoje</div></th>
-      </tr></thead><tbody></tbody>
-    </table></div>
-  </div>
+<div class="card">
+  <h3 class="ct">Semáforo — as três leituras lado a lado</h3>
+  <p class="csub" id="procCount"></p>
+  <div style="overflow-x:auto;max-height:460px;overflow-y:auto"><table id="procTbl" aria-label="Contratos com nível ex-ante, nível observado e probabilidade prevista pelo modelo">
+    <thead><tr>
+      <th>Contrato</th><th>Objeto</th><th class="num">Valor global</th>
+      <th>Ex-ante<div class="thsub">Res. 781 · na assinatura</div></th>
+      <th>Observado<div class="thsub">Res. 781 · hoje</div></th>
+      <th class="num">Previsão ML<div class="thsub">na assinatura</div></th>
+    </tr></thead><tbody></tbody>
+  </table></div>
+</div>
 
-  <div>
-    <div class="card" style="margin-bottom:14px">
-      <h3 class="ct" id="shapTitle">Fatores do nível observado</h3>
-      <p class="csub" id="shapSub">Selecione um contrato ao lado para ver os fatores</p>
-      <div id="shapChart"></div>
-      <div id="outcomeBox"></div>
-      <div class="gov" id="govRow" style="display:none">
-        <button class="gbtn validate" id="btnValidate">✓ Validar Risco</button>
-        <button class="gbtn fp" id="btnFP">✕ Falso Positivo</button>
-        <span class="gov-note">Human-in-the-loop: decisão registrada localmente nesta PoC.</span>
-      </div>
-      <div id="govDone"></div>
-    </div>
-
-    <div class="card">
-      <h3 class="ct">Matriz de Riscos — Probabilidade × Impacto (nível observado)</h3>
-      <p class="csub">Distribuição real dos contratos filtrados nas escalas da Res. 781/2022 —
-        leitura retrospectiva, não a predição do modelo</p>
-      <div id="matrix"></div>
-      <div class="legend" id="matrixLegend"></div>
-    </div>
+<div class="card" style="margin-top:14px">
+  <h3 class="ct" id="shapTitle">Detalhamento do contrato</h3>
+  <p class="csub" id="shapSub">Selecione um contrato na tabela acima para ver o detalhamento</p>
+  <div class="grid2" style="align-items:start">
+    <div id="shapChart"></div>
+    <div id="outcomeBox"></div>
   </div>
+  <div class="gov" id="govRow" style="display:none">
+    <button class="gbtn validate" id="btnValidate">✓ Validar Risco</button>
+    <button class="gbtn fp" id="btnFP">✕ Falso Positivo</button>
+    <span class="gov-note">Human-in-the-loop: decisão registrada localmente nesta PoC.</span>
+  </div>
+  <div id="govDone"></div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h3 class="ct">Matriz de Riscos — Probabilidade × Impacto (nível observado)</h3>
+  <p class="csub">Distribuição real dos contratos filtrados nas escalas da Res. 781/2022 —
+    leitura retrospectiva, não a predição do modelo</p>
+  <div style="max-width:560px"><div id="matrix"></div>
+  <div class="legend" id="matrixLegend"></div></div>
 </div>
 
 <div class="card" style="margin-top:14px">
@@ -499,9 +502,21 @@ function renderSupplier(){
 
 /* ================= MÓDULO 3 ================= */
 const scoreDe = p => p.prob*p.imp;
+const TAXA_BASE = 0.018;   // prevalência de desfecho adverso no treino do modelo
+/* célula da coluna "Previsão ML": % calibrada + barra proporcional ao máximo da carteira */
+const MAX_ML = Math.max(...PROCS.map(p=>p?.ml?.prob||0), 0.01);
+function mlCell(p){
+  if(!p.ml) return '<span class="small">—</span>';
+  const pct = p.ml.prob*100;
+  const lift = p.ml.prob/TAXA_BASE;
+  const cor = lift>=3? 'var(--st-crit)' : lift>=2? 'var(--st-serious)' : 'var(--ink)';
+  return `<span class="mlcell" title="${lift.toLocaleString('pt-BR',{maximumFractionDigits:1})}× a taxa base de ${(TAXA_BASE*100).toLocaleString('pt-BR',{maximumFractionDigits:1})}%">
+    <span class="mlbar"><span style="width:${Math.min(100,p.ml.prob/MAX_ML*100).toFixed(0)}%;background:${cor}"></span></span>
+    <span style="color:${cor};font-weight:600">${pct.toLocaleString('pt-BR',{maximumFractionDigits:1})}%</span></span>`;
+}
 function renderProcs(){
   const ps = [...filtered()].sort((a,b)=>scoreDe(b)-scoreDe(a)||b.valor-a.valor);
-  $('#procCount').textContent = `${ps.length} contrato${ps.length===1?'':'s'} no filtro · ordenados por risco · clique para explicar`;
+  $('#procCount').textContent = `${ps.length} contrato${ps.length===1?'':'s'} no filtro · ordenados pelo nível observado · clique em uma linha para ver o detalhamento abaixo`;
   const tb = $('#procTbl tbody');
   tb.innerHTML = ps.slice(0,400).map(p=>{
     const done = state.decisions[p.pncp];
@@ -511,8 +526,9 @@ function renderProcs(){
       <td>${esc(p.obj.slice(0,110))}${p.obj.length>110?'…':''}<div class="small">${esc(p.forn_nome||'')}</div></td>
       <td class="num">${BRLc(p.valor)}</td>
       <td>${badge(p.nivel_ex)}</td>
-      <td>${badge(p.nivel)}${p.nivel_ex!==p.nivel? '<div class="small" title="agravou-se após a assinatura">↑ agravou</div>':''}</td></tr>`;
-  }).join('') || `<tr><td colspan="5" class="small" style="padding:16px">Nenhum contrato no filtro.</td></tr>`;
+      <td>${badge(p.nivel)}${p.nivel_ex!==p.nivel? '<div class="small" title="agravou-se após a assinatura">↑ agravou</div>':''}</td>
+      <td class="num">${mlCell(p)}</td></tr>`;
+  }).join('') || `<tr><td colspan="6" class="small" style="padding:16px">Nenhum contrato no filtro.</td></tr>`;
   tb.querySelectorAll('.prow').forEach(r=>{
     const go = ()=>{ state.selProc=r.dataset.id; renderProcs(); renderShap(); };
     r.addEventListener('click',go);
@@ -524,8 +540,8 @@ function renderShap(){
   const p = PROCS.find(x=>x.pncp===state.selProc);
   const box=$('#shapChart'), gov=$('#govRow'), done=$('#govDone'), out=$('#outcomeBox');
   if(!p){ box.innerHTML=''; out.innerHTML=''; gov.style.display='none'; done.innerHTML='';
-    $('#shapTitle').textContent='Fatores do nível observado';
-    $('#shapSub').textContent='Selecione um contrato ao lado para ver os fatores'; return; }
+    $('#shapTitle').textContent='Detalhamento do contrato';
+    $('#shapSub').textContent='Selecione um contrato na tabela acima para ver o detalhamento'; return; }
   $('#shapTitle').innerHTML = `Contrato ${esc(p.id)}`;
   $('#shapSub').innerHTML = `<span style="display:inline-block;margin-right:14px">ex-ante (na assinatura):
       ${badge(p.nivel_ex)} <span style="color:var(--muted)">prob. ${p.prob_ex}/5</span></span>
