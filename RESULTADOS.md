@@ -195,9 +195,21 @@ fidelidade ao modelo publicado.
 > enquanto a probabilidade vem do mesmo algoritmo calibrado em 5 partições.
 > Concordância de ordenação: **Spearman 0,878** — muito acima dos 0,222 do
 > substituto, porém inferior a 1. Parte da diferença é artefato de empates: a
-> calibração isotônica reduz os 293 contratos do STF a 111 valores distintos,
-> penalizando o coeficiente. O valor fica gravado em `ml_stf_v2.json` como
-> `fidelidade_shap_spearman`.
+> calibração isotônica é função em degraus e reduz os 293 contratos do STF a
+> apenas **111 valores distintos** de probabilidade, o que penaliza o coeficiente
+> de Spearman sem que haja discordância real de ordenação.
+>
+> O valor é medido a cada publicação do modelo e gravado em `ml_stf_v2.json`
+> como `fidelidade_shap_spearman`; **o próprio dashboard exibe essa ressalva** no
+> bloco "Como as três leituras são calculadas", de modo que quem consulta o
+> painel conhece o limite da explicação sem precisar recorrer a esta documentação.
+>
+> Eliminar por completo o resíduo exigiria calibrar com `cv="prefit"` sobre um
+> conjunto reservado — aí haveria um único modelo, e o SHAP explicaria exatamente
+> o escore que alimenta a calibração. O custo seria retirar dados do ajuste do
+> modelo, com apenas 296 casos positivos disponíveis. A opção atual privilegia a
+> qualidade da calibração (ECE 0,006) e assume o resíduo de fidelidade, medido e
+> divulgado.
 
 Permanece defensável a alternativa oposta — publicar a própria regressão logística
 como modelo, abrindo mão de ~metade do poder preditivo (PR-AUC 0,065 contra 0,139)
@@ -239,6 +251,13 @@ Reproduzir: `python pipeline/compara_explicacoes.py`.
   temporal; em produção, contar apenas contratos anteriores à assinatura.
 - A precisão absoluta dos alertas é baixa (classe rara): o uso correto é
   ranqueamento com fila por capacidade de diligência, com decisão sempre humana.
+- **As explicações SHAP não decompõem exatamente a porcentagem exibida.** Elas
+  descrevem o Gradient Boosting ajustado sobre toda a base, enquanto a
+  probabilidade provém do mesmo algoritmo calibrado em 5 partições — concordância
+  de ordenação de **0,878** (Spearman), parcialmente reduzida pelos empates da
+  calibração isotônica (ver 5.5). A alternativa que eliminaria o resíduo seria
+  calibrar com `cv="prefit"` sobre um conjunto separado, ao custo de reduzir os
+  dados de ajuste do modelo.
 - Comparações de preço por PDM agregam especificações heterogêneas: desvios
   disparam diligência, nunca conclusão de sobrepreço.
 - Sanções (CEIS/CNEP, SICAF, CNDT) não integram o modelo — dependem de
