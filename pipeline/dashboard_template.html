@@ -292,6 +292,17 @@ casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que 
 </div>
 
 <div class="card" style="margin-top:14px">
+  <h3 class="ct">Matriz de Riscos — Probabilidade × Impacto (ex-ante)</h3>
+  <p class="csub">Leitura <strong>preventiva pela norma</strong>: mesmo escore heurístico da Res. 781/2022,
+    mas usando apenas os fatores conhecidos no dia da assinatura. Comparada à matriz do ML (acima, à
+    esquerda), mostra o que a régua normativa via — e o que ela não via — no momento de contratar.</p>
+  <div style="max-width:540px">
+    <div id="matrixEx"></div>
+    <div class="legend" id="matrixExLegend"></div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
     <h3 class="ct" style="margin:0">Visão em tabela (acessibilidade)</h3>
     <button class="tbl-toggle" id="tblToggle" aria-expanded="false">mostrar dados completos</button>
@@ -711,6 +722,10 @@ function renderMatrix(){
   // direita: nível observado hoje pela heurística da Res. 781/2022
   renderMatrizEm('#matrix', '#matrixLegend', p => p.prob, {
     eixoX: 'Probabilidade (Res. 781) →',
+  });
+  // abaixo: mesma heurística, mas só com os fatores conhecidos na assinatura
+  renderMatrizEm('#matrixEx', '#matrixExLegend', p => p.prob_ex, {
+    eixoX: 'Probabilidade ex-ante (Res. 781) →',
   });
 }
 
