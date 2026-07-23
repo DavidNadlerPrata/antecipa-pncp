@@ -271,12 +271,24 @@ casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que 
   <div id="govDone"></div>
 </div>
 
-<div class="card" style="margin-top:14px">
-  <h3 class="ct">Matriz de Riscos — Probabilidade × Impacto (nível observado)</h3>
-  <p class="csub">Distribuição real dos contratos filtrados nas escalas da Res. 781/2022 —
-    leitura retrospectiva, não a predição do modelo</p>
-  <div style="max-width:560px"><div id="matrix"></div>
-  <div class="legend" id="matrixLegend"></div></div>
+<div class="grid2" style="margin-top:14px;align-items:start">
+  <div class="card">
+    <h3 class="ct">Matriz de Riscos — Probabilidade prevista na assinatura (ML)</h3>
+    <p class="csub">Leitura <strong>preventiva</strong>: probabilidade calibrada do modelo convertida
+      para a escala 1–5 (1: &lt;2% · 2: 2–5% · 3: 5–10% · 4: 10–20% · 5: ≥20%), com o mesmo eixo de
+      impacto. É onde os contratos estariam <em>antes</em> de contratar.</p>
+    <div id="matrixML"></div>
+    <div class="legend" id="matrixMLLegend"></div>
+  </div>
+
+  <div class="card">
+    <h3 class="ct">Matriz de Riscos — Probabilidade × Impacto (nível observado)</h3>
+    <p class="csub">Leitura <strong>retrospectiva</strong>: escore heurístico da Res. 781/2022 já
+      considerando o que aconteceu com o contrato (aditivos, acréscimos, rescisão). É onde os
+      contratos estão <em>hoje</em>.</p>
+    <div id="matrix"></div>
+    <div class="legend" id="matrixLegend"></div>
+  </div>
 </div>
 
 <div class="card" style="margin-top:14px">
@@ -638,10 +650,26 @@ function decide(kind){
   renderProcs(); renderShap();
 }
 
-function renderMatrix(){
-  const ps = filtered();
+/* Faixas que traduzem a probabilidade contínua e calibrada do modelo para a
+   escala ordinal 1–5 da Res. 781/2022. São absolutas (não quantis), ancoradas
+   na taxa base de 1,8%, para que a matriz do ML seja lida na mesma régua da
+   matriz normativa e comparável entre períodos. */
+const FAIXAS_ML = [
+  {max:0.02, i:1, rot:'< 2%'},
+  {max:0.05, i:2, rot:'2 a 5%'},
+  {max:0.10, i:3, rot:'5 a 10%'},
+  {max:0.20, i:4, rot:'10 a 20%'},
+  {max:1.01, i:5, rot:'≥ 20%'},
+];
+const probML = p => (FAIXAS_ML.find(f=>p.ml.prob < f.max) || FAIXAS_ML[4]).i;
+const rotuloML = i => (FAIXAS_ML.find(f=>f.i===i)||{}).rot || '';
+
+/* Renderiza uma matriz probabilidade × impacto num container qualquer.
+   probFn define de onde vem a probabilidade (nível observado ou predição ML). */
+function renderMatrizEm(idMatriz, idLegenda, probFn, opts){
+  const ps = filtered().filter(opts.filtro || (()=>true));
   const cnt = {};
-  ps.forEach(p=>{ const k=p.prob+'-'+p.imp; (cnt[k]=cnt[k]||[]).push(p); });
+  ps.forEach(p=>{ const k=probFn(p)+'-'+p.imp; (cnt[k]=cnt[k]||[]).push(p); });
   let html = `<div class="small" style="margin-bottom:4px">Impacto ↑</div>`;
   html += `<div class="hm" style="grid-template-columns:24px repeat(5,1fr)">`;
   for(let imp=5; imp>=1; imp--){
@@ -651,22 +679,38 @@ function renderMatrix(){
       const n = s<=4?'Baixo':s<=9?'Moderado':s<=16?'Elevado':'Crítico';
       const list=cnt[prob+'-'+imp]||[];
       html += `<div class="hm-cell" style="background:${NIVEIS[n].wash}"
-        data-n="${list.length}" data-lv="${n}" data-pi="P${prob} × I${imp}">
+        data-n="${list.length}" data-lv="${n}" data-pi="P${prob} × I${imp}"
+        data-faixa="${esc(opts.rotuloProb? opts.rotuloProb(prob):'')}">
         ${list.length? `<span>${list.length}</span>`:''}</div>`;
     }
   }
   html += `<div></div>` + [1,2,3,4,5].map(p=>`<div class="hm-lab">${p}</div>`).join('');
-  html += `</div><div class="small" style="text-align:center;margin-top:4px">Probabilidade →</div>`;
-  $('#matrix').innerHTML = html;
-  $('#matrixLegend').innerHTML = Object.entries(NIVEIS).map(([n,v])=>
+  html += `</div><div class="small" style="text-align:center;margin-top:4px">${esc(opts.eixoX||'Probabilidade →')}</div>`;
+  $(idMatriz).innerHTML = html;
+  $(idLegenda).innerHTML = Object.entries(NIVEIS).map(([n,v])=>
     `<span><span class="sw" style="background:${v.color}"></span>${n}</span>`).join('') +
-    `<span class="small">células = nº de contratos reais</span>`;
-  document.querySelectorAll('#matrix .hm-cell').forEach(c=>{
+    `<span class="small">células = nº de contratos${ps.length!==filtered().length? ' com predição':''}</span>`;
+  document.querySelectorAll(`${idMatriz} .hm-cell`).forEach(c=>{
     if(!+c.dataset.n) return;
     c.addEventListener('pointermove',e=>showTip(
       `<div class="tv">${c.dataset.n} contrato${c.dataset.n==1?'':'s'}</div>
-       <div class="tl">${c.dataset.pi} · nível ${c.dataset.lv}</div>`, e.clientX,e.clientY));
+       <div class="tl">${c.dataset.pi} · nível ${c.dataset.lv}</div>
+       ${c.dataset.faixa? `<div class="tl">probabilidade ${esc(c.dataset.faixa)}</div>`:''}`,
+      e.clientX,e.clientY));
     c.addEventListener('pointerleave',hideTip);
+  });
+}
+
+function renderMatrix(){
+  // esquerda: predição do modelo na assinatura (só contratos com predição)
+  renderMatrizEm('#matrixML', '#matrixMLLegend', probML, {
+    filtro: p => !!p.ml,
+    rotuloProb: rotuloML,
+    eixoX: 'Probabilidade prevista (ML) →',
+  });
+  // direita: nível observado hoje pela heurística da Res. 781/2022
+  renderMatrizEm('#matrix', '#matrixLegend', p => p.prob, {
+    eixoX: 'Probabilidade (Res. 781) →',
   });
 }
 
