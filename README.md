@@ -13,6 +13,9 @@ oficiais e treina o **modelo supervisionado de desfecho adverso** prometido no
 projeto. Responde diretamente às recomendações nº 1, 2, 3, 7 e 9 da
 `../analise_critica_ANTECIPA.md`.
 
+📊 **[RESULTADOS.md](RESULTADOS.md)** — documento consolidado com metodologia,
+resultados de todos os experimentos, achados de engenharia de dados e limitações.
+
 Histórico de versões:
 
 - **v1** — dados reais do STF nos 3 módulos do dashboard; dataset multi-órgão;
