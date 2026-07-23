@@ -62,9 +62,17 @@ recomendação de usar APIs oficiais em vez de raspagem (análise crítica, 2.3)
   maior escore, 16 tiveram desfecho adverso real (7,6× a taxa base).
 - **Publicação no dashboard**: `CalibratedClassifierCV` isotônica (5 folds) —
   as porcentagens exibidas são frequências reais (mediana 7,8 %, máx. 24,5 % na
-  carteira do STF), não escores inflados pelo `class_weight`. Explicações por
-  contribuições aditivas (log-odds) da regressão logística — insumo da
-  motivação humana, não a motivação (item 2.8).
+  carteira do STF), não escores inflados pelo `class_weight`.
+- **Explicações por SHAP** (`TreeExplainer`) sobre o *próprio* Gradient Boosting
+  — insumo da motivação humana, não a motivação (item 2.8). A escolha foi
+  tomada por evidência: `compara_explicacoes.py` mediu que a regressão logística
+  antes usada como modelo substituto coincidia com o modelo real quanto ao fator
+  principal em apenas **12,3 %** dos contratos (Spearman médio 0,222), porque
+  contribuições de variáveis *one-hot* são constantes e dominavam a explicação
+  sem discriminar nada. Contribuições categóricas são somadas por variável
+  original, evitando atribuições a níveis que o contrato não assume. Fidelidade
+  ao modelo publicado: Spearman 0,878 (parte da diferença é artefato de empates
+  da calibração isotônica, que reduz 293 contratos a 111 valores distintos).
 - **Evidência da calibração** (`diagrama_calibracao.py` → `diagrama_calibracao.png`):
   no teste temporal de 2025, o modelo bruto prevê em média 24,5 % onde a
   frequência real é 2,1 % (superestimativa de ~12×); calibrado, a média vai a
@@ -113,6 +121,7 @@ python monta_dataset_v2.py    # v2: rótulo com horizonte de 12 meses
 python treina_modelo_v2.py    # v2: treino + relatorio_modelo_v2.md
 python treina_stf_vs_multi.py # experimento só-STF × multi-órgão (bootstrap)
 python diagrama_calibracao.py # diagrama de confiabilidade (figura + métricas)
+python compara_explicacoes.py # SHAP × modelo substituto (figura + concordância)
 python publica_modelo_v2.py   # v2 calibrado p/ dashboard (ml_stf_v2.json)
 
 # Dashboard
@@ -138,6 +147,8 @@ antecipa-real/
 │   ├── comparacao_stf_vs_multi.md   experimento só-STF × multi-órgão
 │   ├── diagrama_calibracao.png      evidência visual da calibração
 │   ├── calibracao_metricas.json     Brier, ECE e curvas por bin
+│   ├── comparacao_explicacoes.md    SHAP × logística: concordância e exemplos
+│   ├── comparacao_explicacoes.png   as duas explicações lado a lado
 │   ├── ml_stf.json / ml_stf_v2.json predições por contrato (v1 / v2 calibrado)
 │   └── modelo_metrics*.json         métricas em formato estruturado
 └── README.md
