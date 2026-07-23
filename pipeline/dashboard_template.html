@@ -225,27 +225,29 @@ homologados por todos os órgãos federais (API de pesquisa de preços do compra
 
 <!-- =============== MÓDULO 3 =============== -->
 <h2 class="mod"><span class="mnum">MÓDULO 3</span> Alertas de Risco — Nível observado (Res. 781/2022) × Predição na assinatura (ML)</h2>
-<p class="moddesc">Todos os contratos do STF publicados no PNCP desde 2023, sob <strong>duas leituras
+<p class="moddesc">Todos os contratos do STF publicados no PNCP desde 2023, sob <strong>três leituras
 distintas e complementares</strong>, que não devem ser confundidas:</p>
 <p class="moddesc" style="margin-top:-6px">
-<strong>1. Nível de risco observado (Res. 781/2022)</strong> — escore heurístico transparente nas escalas
-de probabilidade × impacto da norma. É uma leitura <em>retrospectiva</em>: considera também o que já
-aconteceu com o contrato (aditivos firmados, acréscimos, rescisão) e pondera pelo impacto orçamentário.
-Responde a “como este contrato está hoje”.<br>
-<strong>2. Probabilidade prevista na assinatura (ML)</strong> — modelo supervisionado calibrado, usando
-<em>somente</em> informação disponível no dia da assinatura. É probabilidade pura, sem ponderação por
-impacto. Responde a “o que era previsível antes de contratar”.<br>
-<span class="small">Por isso um contrato de altíssimo valor que já sofreu aditivos pode aparecer como
-<em>Crítico</em> na primeira leitura e com probabilidade modesta na segunda — são perguntas diferentes.
-A coluna de desfecho mostra o que de fato ocorreu, e é o rótulo com que o modelo foi treinado.</span></p>
+<strong>1. Nível ex-ante (Res. 781/2022)</strong> — escore heurístico usando <em>apenas</em> o que se
+sabia no dia da assinatura. É o que o sistema teria mostrado ao gestor <strong>antes de contratar</strong>:
+a leitura preventiva, e a única comparável à predição do modelo.<br>
+<strong>2. Nível observado (Res. 781/2022)</strong> — o mesmo escore acrescido do que já aconteceu depois
+(aditivos firmados, acréscimos, rescisão). Leitura retrospectiva, útil para gerir contratos vigentes.<br>
+<strong>3. Probabilidade prevista na assinatura (ML)</strong> — modelo supervisionado calibrado, também
+ex-ante, mas probabilidade pura, sem ponderação por impacto.<br>
+<span class="small">Os dois níveis usam o mesmo impacto (quantil do valor na carteira); a diferença entre
+eles é exatamente o que o contrato acumulou de problemas após assinado — a seta “↑ agravou” marca esses
+casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que o modelo foi treinado.</span></p>
 
 <div class="grid2">
   <div class="card">
-    <h3 class="ct">Semáforo — Nível de risco observado (Res. 781/2022)</h3>
+    <h3 class="ct">Semáforo — Res. 781/2022 em duas leituras</h3>
     <p class="csub" id="procCount"></p>
-    <div style="overflow-x:auto;max-height:560px;overflow-y:auto"><table id="procTbl" aria-label="Contratos por nível de risco observado nas escalas da Resolução 781/2022">
+    <div style="overflow-x:auto;max-height:560px;overflow-y:auto"><table id="procTbl" aria-label="Contratos por nível de risco ex-ante e observado nas escalas da Resolução 781/2022">
       <thead><tr>
-        <th>Contrato</th><th>Objeto</th><th class="num">Valor global</th><th>Nível observado</th>
+        <th>Contrato</th><th>Objeto</th><th class="num">Valor global</th>
+        <th>Ex-ante<div class="small" style="font-weight:400;text-transform:none;letter-spacing:0">na assinatura</div></th>
+        <th>Observado<div class="small" style="font-weight:400;text-transform:none;letter-spacing:0">hoje</div></th>
       </tr></thead><tbody></tbody>
     </table></div>
   </div>
@@ -342,6 +344,7 @@ const filtered = () => PROCS.filter(p =>
 function renderKPIs(){
   const ps = filtered();
   const high = ps.filter(p=>p.nivel==='Elevado'||p.nivel==='Crítico');
+  const highEx = ps.filter(p=>p.nivel_ex==='Elevado'||p.nivel_ex==='Crítico');
   const adv = ps.filter(p=>p.desfecho.desfecho_adverso);
   const nAdit = ps.reduce((s,p)=>s+p.desfecho.n_aditivos,0);
   const valTotal = ps.reduce((s,p)=>s+p.valor,0);
@@ -349,9 +352,9 @@ function renderKPIs(){
    <div class="card kpi"><div class="klabel">Contratos reais monitorados</div>
      <div class="kvalue">${ps.length}</div>
      <div class="kdelta">${BRLc(valTotal)} em valor global (PNCP)</div></div>
-   <div class="card kpi"><div class="klabel">Nível observado Elevado ou Crítico</div>
-     <div class="kvalue">${high.length}</div>
-     <div class="kdelta"><span class="${high.length?'up-bad':'up-good'}">${ps.length?Math.round(100*high.length/ps.length):0}%</span> do filtro atual · Res. 781/2022</div></div>
+   <div class="card kpi"><div class="klabel">Elevado ou Crítico — ex-ante × observado</div>
+     <div class="kvalue">${highEx.length}<span style="font-size:16px;color:var(--muted)"> → ${high.length}</span></div>
+     <div class="kdelta">na assinatura → hoje · ${high.length-highEx.length>0? `<span class="up-bad">+${high.length-highEx.length} agravaram</span>`:'sem agravamento'}</div></div>
    <div class="card kpi"><div class="klabel">Desfecho adverso observado</div>
      <div class="kvalue">${adv.length}</div>
      <div class="kdelta">rescisão, acréscimo &gt;25% ou prorrogação &gt;1 ano</div></div>
@@ -507,8 +510,9 @@ function renderProcs(){
         <div class="small">${esc(p.assinatura||'')}</div></td>
       <td>${esc(p.obj.slice(0,110))}${p.obj.length>110?'…':''}<div class="small">${esc(p.forn_nome||'')}</div></td>
       <td class="num">${BRLc(p.valor)}</td>
-      <td>${badge(p.nivel)}</td></tr>`;
-  }).join('') || `<tr><td colspan="4" class="small" style="padding:16px">Nenhum contrato no filtro.</td></tr>`;
+      <td>${badge(p.nivel_ex)}</td>
+      <td>${badge(p.nivel)}${p.nivel_ex!==p.nivel? '<div class="small" title="agravou-se após a assinatura">↑ agravou</div>':''}</td></tr>`;
+  }).join('') || `<tr><td colspan="5" class="small" style="padding:16px">Nenhum contrato no filtro.</td></tr>`;
   tb.querySelectorAll('.prow').forEach(r=>{
     const go = ()=>{ state.selProc=r.dataset.id; renderProcs(); renderShap(); };
     r.addEventListener('click',go);
@@ -522,39 +526,55 @@ function renderShap(){
   if(!p){ box.innerHTML=''; out.innerHTML=''; gov.style.display='none'; done.innerHTML='';
     $('#shapTitle').textContent='Fatores do nível observado';
     $('#shapSub').textContent='Selecione um contrato ao lado para ver os fatores'; return; }
-  $('#shapTitle').innerHTML = `Contrato ${esc(p.id)} · nível observado ${badge(p.nivel)}`;
-  $('#shapSub').textContent = `probabilidade ${p.prob}/5 · impacto ${p.imp}/5 (Res. 781/2022) · escore heurístico transparente, retrospectivo (inclui o que já ocorreu) — não é o modelo de ML`;
-  const fs = p.fatores.filter(f=>f[1]!==null).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,7);
+  $('#shapTitle').innerHTML = `Contrato ${esc(p.id)}`;
+  $('#shapSub').innerHTML = `<span style="display:inline-block;margin-right:14px">ex-ante (na assinatura):
+      ${badge(p.nivel_ex)} <span style="color:var(--muted)">prob. ${p.prob_ex}/5</span></span>
+    <span>observado (hoje): ${badge(p.nivel)} <span style="color:var(--muted)">prob. ${p.prob}/5</span></span>
+    <span style="display:block;margin-top:3px">impacto ${p.imp}/5 (comum às duas) · escore heurístico
+    transparente da Res. 781/2022 — não é o modelo de ML</span>`;
+  // fatores ex-ante primeiro, depois os pós-assinatura; dentro de cada grupo, por magnitude
+  const fs = p.fatores.filter(f=>f[1]!==null)
+    .sort((a,b)=> (b[2]?1:0)-(a[2]?1:0) || Math.abs(b[1])-Math.abs(a[1])).slice(0,7);
+  const temPos = fs.some(f=>!f[2]);
   const W=520,rowH=40,top=26,H=top+Math.max(fs.length,1)*rowH+30;
   const maxAbs = Math.max(...fs.map(f=>Math.abs(f[1])),.5);
   const mid=W*0.52;
   const rows = fs.map((f,i)=>{
     const y=top+i*rowH;
     const w=Math.abs(f[1])*(W*0.30)/maxAbs;
-    const pos=f[1]>0;
+    const pos=f[1]>0, exAnte=f[2];
     const bx=pos? mid+1 : mid-1-w;
     const vx=pos? mid+w+8 : mid-w-8;
-    return `<g class="srow" data-f="${esc(f[0])}" data-v="${f[1]}">
-      <rect x="${bx.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="16" rx="4" fill="${pos?'var(--div-pos)':'var(--div-neg)'}"/>
+    const cor = pos?'var(--div-pos)':'var(--div-neg)';
+    return `<g class="srow" data-f="${esc(f[0])}" data-v="${f[1]}" data-ex="${exAnte?1:0}">
+      <rect x="${bx.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="16" rx="4"
+        fill="${cor}" ${exAnte?'':'fill-opacity=".35" stroke="'+cor+'" stroke-width="1.5" stroke-dasharray="3 2"'}/>
       <text x="${vx.toFixed(1)}" y="${y+12.5}" class="val-t" text-anchor="${pos?'start':'end'}">${pos?'+':'−'}${Math.abs(f[1]).toFixed(1)}</text>
-      <text x="${mid}" y="${y-4}" class="lbl-t" text-anchor="middle">${esc(f[0].length>76? f[0].slice(0,74)+'…' : f[0])}</text>
+      <text x="${mid}" y="${y-4}" class="lbl-t" text-anchor="middle">${esc(f[0].length>70? f[0].slice(0,68)+'…' : f[0])}${exAnte?'':' ⟳'}</text>
       <rect x="0" y="${y-16}" width="${W}" height="${rowH}" fill="transparent"/>
     </g>`;
   }).join('');
   const fatorImp = p.fatores.find(f=>f[1]===null);
   box.innerHTML = `
    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img"
-     aria-label="Fatores do escore de risco do contrato ${esc(p.id)}">
+     aria-label="Fatores do escore de risco do contrato ${esc(p.id)}, separando os conhecidos na assinatura dos posteriores">
      <line x1="${mid}" x2="${mid}" y1="${top-16}" y2="${H-24}" class="baseline"/>
      ${rows}
      <text x="${mid-8}" y="${H-8}" text-anchor="end" class="axis-t">← reduz a probabilidade</text>
      <text x="${mid+8}" y="${H-8}" class="axis-t">aumenta →</text>
    </svg>
-   ${fatorImp? `<p class="small" style="margin-top:4px">${esc(fatorImp[0])}</p>`:''}`;
+   <div class="legend">
+     <span><span class="sw" style="background:var(--div-pos)"></span>conhecido na assinatura (entra no ex-ante)</span>
+     ${temPos? `<span><span class="sw" style="background:var(--div-pos);opacity:.35;border:1px dashed var(--div-pos)"></span>⟳ posterior à assinatura (só no observado)</span>`:''}
+   </div>
+   ${fatorImp? `<p class="small" style="margin-top:2px">${esc(fatorImp[0])}</p>`:''}`;
   box.querySelectorAll('.srow').forEach(g=>{
     g.addEventListener('pointermove',e=>{
       const v=+g.dataset.v;
-      showTip(`<div class="tv">${v>0?'+':'−'}${Math.abs(v).toFixed(1)} <span style="font-weight:400">pts de probabilidade</span></div><div class="tl">${esc(g.dataset.f)}</div>`,e.clientX,e.clientY);
+      const ex = g.dataset.ex==='1';
+      showTip(`<div class="tv">${v>0?'+':'−'}${Math.abs(v).toFixed(1)} <span style="font-weight:400">pts de probabilidade</span></div>
+        <div class="tl">${esc(g.dataset.f)}</div>
+        <div class="tl" style="margin-top:3px">${ex?'Conhecido na assinatura — conta nas duas leituras.':'⟳ Posterior à assinatura — conta apenas no nível observado.'}</div>`,e.clientX,e.clientY);
     });
     g.addEventListener('pointerleave',hideTip);
   });
@@ -638,12 +658,14 @@ function renderFullTbl(){
   const ps = filtered();
   $('#fullTbl').innerHTML = `<table>
    <thead><tr><th>Contrato PNCP</th><th>Objeto</th><th>Fornecedor</th><th class="num">Valor (R$)</th>
-   <th class="num">P</th><th class="num">I</th><th>Nível observado</th><th class="num">Aditivos</th><th>Desfecho</th></tr></thead>
+   <th class="num">P ex-ante</th><th class="num">P obs.</th><th class="num">I</th>
+   <th>Nível ex-ante</th><th>Nível observado</th><th class="num">Aditivos</th><th>Desfecho</th></tr></thead>
    <tbody>${ps.map(p=>`<tr>
      <td style="font-variant-numeric:tabular-nums">${esc(p.pncp)}</td>
      <td>${esc(p.obj.slice(0,120))}</td><td>${esc(p.forn_nome||'')}</td>
      <td class="num">${p.valor.toLocaleString('pt-BR')}</td>
-     <td class="num">${p.prob}</td><td class="num">${p.imp}</td><td>${badge(p.nivel)}</td>
+     <td class="num">${p.prob_ex}</td><td class="num">${p.prob}</td><td class="num">${p.imp}</td>
+     <td>${badge(p.nivel_ex)}</td><td>${badge(p.nivel)}</td>
      <td class="num">${p.desfecho.n_aditivos}</td>
      <td>${p.desfecho.desfecho_adverso?'Adverso':'Regular'}</td></tr>`).join('')}
    </tbody></table>`;

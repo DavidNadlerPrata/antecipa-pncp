@@ -138,59 +138,72 @@ def quantil(v):
 
 
 def classifica(c, desf, perfil):
-    fatores = []  # [texto, contribuição em pontos de probabilidade]
-    prob = 1.0
-    # -- fornecedor
+    """Calcula DOIS escores na escala de probabilidade da Res. 781/2022:
+
+      prob_ex  — EX-ANTE: só o que se sabia no dia da assinatura. É o escore que
+                 o sistema teria exibido ao gestor no momento da decisão de
+                 contratar, e o único comparável à predição do modelo de ML.
+      prob     — OBSERVADO: acrescenta o que já aconteceu com o contrato
+                 (aditivos, acréscimos, rescisão). Leitura retrospectiva, útil
+                 para gestão de contratos vigentes.
+
+    Cada fator é marcado com ex_ante=True/False para que o painel possa
+    distinguir as duas leituras.
+    """
+    fatores = []  # [texto, contribuição, ex_ante]
+    prob = 1.0      # observado (todos os fatores)
+    prob_ex = 1.0   # ex-ante (só fatores conhecidos na assinatura)
+
+    def add(texto, pts, ex_ante):
+        nonlocal prob, prob_ex
+        fatores.append([texto, pts, ex_ante])
+        prob += pts
+        if ex_ante:
+            prob_ex += pts
+
+    # -- fornecedor (tudo conhecido na assinatura)
     if perfil:
         r = perfil.get("razao_capital_volume")
         if not perfil.get("capital_social"):
-            prob += 0.3
-            fatores.append(["Capital social não informado na base aberta da Receita (comum em consórcios) — verificar", 0.3])
+            add("Capital social não informado na base aberta da Receita (comum em consórcios) — verificar", 0.3, True)
         elif r is not None and r < 0.02:
-            prob += 1.2
-            fatores.append([f"Capital social (R$ {perfil['capital_social']:,.0f}) muito inferior ao volume contratado nacional (R$ {perfil['vol_nacional']:,.0f})".replace(",", "."), 1.2])
+            add(f"Capital social (R$ {perfil['capital_social']:,.0f}) muito inferior ao volume contratado nacional (R$ {perfil['vol_nacional']:,.0f})".replace(",", "."), 1.2, True)
         elif r is not None and r > 0.3:
-            fatores.append(["Capital social compatível com o volume contratado", -0.5])
-            prob -= 0.5
+            add("Capital social compatível com o volume contratado", -0.5, True)
         idade = perfil.get("idade_anos")
         if idade is not None and idade < 3:
-            prob += 0.8
-            fatores.append([f"Empresa recente ({idade:.1f} ano(s) de CNPJ)", 0.8])
+            add(f"Empresa recente ({idade:.1f} ano(s) de CNPJ)", 0.8, True)
         elif idade is not None and idade > 10:
-            prob -= 0.4
-            fatores.append([f"Empresa consolidada ({idade:.0f} anos de CNPJ)", -0.4])
+            add(f"Empresa consolidada ({idade:.0f} anos de CNPJ)", -0.4, True)
         cresc = perfil.get("crescimento_recente")
         if cresc is not None and cresc >= 3:
-            prob += 1.0
-            fatores.append([f"Crescimento contratual atípico ({cresc:.1f}× a mediana histórica no PNCP)", 1.0])
+            add(f"Crescimento contratual atípico ({cresc:.1f}× a mediana histórica no PNCP)", 1.0, True)
         if perfil.get("situacao") and perfil["situacao"].upper() != "ATIVA":
-            prob += 1.5
-            fatores.append([f"Situação cadastral na Receita: {perfil['situacao']}", 1.5])
+            add(f"Situação cadastral na Receita: {perfil['situacao']}", 1.5, True)
     else:
-        prob += 0.3
-        fatores.append(["Fornecedor fora do top-15 monitorado (perfil nacional não coletado)", 0.3])
-    # -- histórico do próprio contrato (desfecho parcial observável)
-    if desf["n_aditivos"] >= 2:
-        prob += 0.8
-        fatores.append([f"{desf['n_aditivos']} termos aditivos já firmados", 0.8])
-    if desf["acrescimo_valor_pct"] > 0.10:
-        prob += 0.8
-        fatores.append([f"Valor acumulado {desf['acrescimo_valor_pct']*100:.0f}% acima do inicial", 0.8])
-    if desf["rescindido"]:
-        prob += 1.5
-        fatores.append(["Contrato com termo de rescisão/extinção registrado", 1.5])
-    # -- duração longa = mais exposição
+        add("Fornecedor fora do top-15 monitorado (perfil nacional não coletado)", 0.3, True)
+
+    # -- duração prevista (conhecida na assinatura)
     ini, fim = d(c.get("dataVigenciaInicio")), d(c.get("dataVigenciaFim"))
     if ini and fim and (fim - ini).days > 360:
-        prob += 0.4
-        fatores.append(["Vigência superior a 12 meses (serviço continuado)", 0.4])
+        add("Vigência superior a 12 meses (serviço continuado)", 0.4, True)
+
+    # -- histórico do próprio contrato: SÓ observado (posterior à assinatura)
+    if desf["n_aditivos"] >= 2:
+        add(f"{desf['n_aditivos']} termos aditivos já firmados", 0.8, False)
+    if desf["acrescimo_valor_pct"] > 0.10:
+        add(f"Valor acumulado {desf['acrescimo_valor_pct']*100:.0f}% acima do inicial", 0.8, False)
+    if desf["rescindido"]:
+        add("Contrato com termo de rescisão/extinção registrado", 1.5, False)
+
     prob_i = max(1, min(5, round(prob)))
-    # -- impacto: quantil do valor na carteira do STF
+    prob_ex_i = max(1, min(5, round(prob_ex)))
+    # -- impacto: quantil do valor na carteira do STF (conhecido na assinatura)
     q = quantil(c.get("valorGlobal") or 0)
     imp_i = 1 + int(q * 4.999) if q < 1 else 5
     imp_i = max(1, min(5, imp_i))
-    fatores.append([f"Impacto orçamentário: valor no percentil {q*100:.0f} da carteira STF", None])
-    return prob_i, imp_i, fatores
+    fatores.append([f"Impacto orçamentário: valor no percentil {q*100:.0f} da carteira STF", None, True])
+    return prob_i, prob_ex_i, imp_i, fatores
 
 
 NIVEIS = [(4, "Baixo"), (9, "Moderado"), (16, "Elevado"), (25, "Crítico")]
@@ -230,7 +243,7 @@ procs = []
 for c in contratos:
     desf = desfecho_contrato(c)
     perfil = perfis.get(c.get("niFornecedor"))
-    prob, imp, fatores = classifica(c, desf, perfil)
+    prob, prob_ex, imp, fatores = classifica(c, desf, perfil)
     ini = c.get("dataVigenciaInicio")
     procs.append({
         "id": c.get("processo") or c.get("numeroControlePNCP"),
@@ -243,6 +256,7 @@ for c in contratos:
         "forn_ni": c.get("niFornecedor"),
         "forn_nome": c.get("nomeRazaoSocialFornecedor"),
         "prob": prob, "imp": imp, "nivel": nivel(prob, imp),
+        "prob_ex": prob_ex, "nivel_ex": nivel(prob_ex, imp),
         "fatores": fatores, "desfecho": desf,
         "ml": ml_contratos.get(c.get("numeroControlePNCP")),
     })
@@ -271,7 +285,13 @@ for cod, info in precos.items():
     })
 
 # ------------------------------------------------------------ KPIs e resumo
+ALTOS = ("Elevado", "Crítico")
 n_adversos = sum(1 for p in procs if p["desfecho"]["desfecho_adverso"])
+adversos = [p for p in procs if p["desfecho"]["desfecho_adverso"]]
+# quantos dos contratos que deram errado JÁ apareciam como Elevado/Crítico
+# no escore ex-ante — ou seja, teriam sido sinalizados antes de contratar
+adv_sinalizados = sum(1 for p in adversos if p["nivel_ex"] in ALTOS)
+n_altos_ex = sum(1 for p in procs if p["nivel_ex"] in ALTOS)
 resumo = {
     "coletado_em": HOJE.isoformat(),
     "orgao": "Supremo Tribunal Federal — CNPJ 00.531.640/0001-28",
@@ -281,6 +301,9 @@ resumo = {
     "n_rescindidos": sum(1 for p in procs if p["desfecho"]["rescindido"]),
     "n_desfecho_adverso": n_adversos,
     "pct_desfecho_adverso": round(100 * n_adversos / max(len(procs), 1), 1),
+    "n_altos_ex_ante": n_altos_ex,
+    "adversos_sinalizados_ex_ante": adv_sinalizados,
+    "pct_adversos_sinalizados_ex_ante": round(100 * adv_sinalizados / max(n_adversos, 1), 1),
 }
 
 if ml_stf:
@@ -300,7 +323,8 @@ with open(OUT / "dataset_ml.csv", "w", newline="", encoding="utf-8") as fh:
     w.writerow(["pncp", "valor_global", "duracao_dias", "categoria",
                 "forn_capital_social", "forn_idade_anos", "forn_vol_nacional",
                 "forn_n_contratos_nac", "forn_razao_capital_volume",
-                "forn_crescimento_recente", "prob_heuristica", "imp_heuristica",
+                "forn_crescimento_recente", "prob_heuristica_ex_ante",
+                "prob_heuristica_observada", "imp_heuristica",
                 "label_desfecho_adverso"])
     for p in procs:
         pf = perfis.get(p["forn_ni"]) or {}
@@ -310,5 +334,6 @@ with open(OUT / "dataset_ml.csv", "w", newline="", encoding="utf-8") as fh:
                     pf.get("capital_social", ""), pf.get("idade_anos", ""),
                     pf.get("vol_nacional", ""), pf.get("contratos_nacionais", ""),
                     pf.get("razao_capital_volume", ""), pf.get("crescimento_recente", ""),
-                    p["prob"], p["imp"], int(p["desfecho"]["desfecho_adverso"])])
+                    p["prob_ex"], p["prob"], p["imp"],
+                    int(p["desfecho"]["desfecho_adverso"])])
 print("dataset_ml.csv gravado (rótulo = desfecho real, não regra — ver análise crítica 2.1)")
