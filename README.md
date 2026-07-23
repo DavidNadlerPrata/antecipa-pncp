@@ -65,6 +65,13 @@ recomendação de usar APIs oficiais em vez de raspagem (análise crítica, 2.3)
   carteira do STF), não escores inflados pelo `class_weight`. Explicações por
   contribuições aditivas (log-odds) da regressão logística — insumo da
   motivação humana, não a motivação (item 2.8).
+- **Evidência da calibração** (`diagrama_calibracao.py` → `diagrama_calibracao.png`):
+  no teste temporal de 2025, o modelo bruto prevê em média 24,5 % onde a
+  frequência real é 2,1 % (superestimativa de ~12×); calibrado, a média vai a
+  2,0 % e o ECE cai de 0,224 para 0,006. O ROC-AUC praticamente não se altera
+  (0,806 → 0,802), confirmando que a transformação monotônica preserva a
+  ordenação — a calibração torna a escala interpretável sem alterar a
+  capacidade de discriminar.
 - **Experimentos complementares**: `comparacao_stf_vs_multi.md` (só-STF ×
   multi-órgão no mesmo teste, com bootstrap — empate técnico; multi-órgão
   preferido por estabilidade, nuance empírica à recomendação nº 2) e
@@ -105,6 +112,7 @@ python treina_modelo.py       # v1: treino + relatorio_modelo.md + ml_stf.json
 python monta_dataset_v2.py    # v2: rótulo com horizonte de 12 meses
 python treina_modelo_v2.py    # v2: treino + relatorio_modelo_v2.md
 python treina_stf_vs_multi.py # experimento só-STF × multi-órgão (bootstrap)
+python diagrama_calibracao.py # diagrama de confiabilidade (figura + métricas)
 python publica_modelo_v2.py   # v2 calibrado p/ dashboard (ml_stf_v2.json)
 
 # Dashboard
@@ -128,6 +136,8 @@ antecipa-real/
 │   ├── relatorio_modelo.md          métricas v1
 │   ├── relatorio_modelo_v2.md       métricas v2 + comparação com v1
 │   ├── comparacao_stf_vs_multi.md   experimento só-STF × multi-órgão
+│   ├── diagrama_calibracao.png      evidência visual da calibração
+│   ├── calibracao_metricas.json     Brier, ECE e curvas por bin
 │   ├── ml_stf.json / ml_stf_v2.json predições por contrato (v1 / v2 calibrado)
 │   └── modelo_metrics*.json         métricas em formato estruturado
 └── README.md
