@@ -316,6 +316,7 @@ casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que 
           <em>próprio</em> Gradient Boosting — o modelo que gera a probabilidade —, em escala de log-odds.
           Contribuições de variáveis categóricas são somadas por variável original, evitando atribuições a
           níveis que o contrato não assume.</p>
+        <p id="fidelidadeNota"></p>
       </div>
       <div>
         <h4>3 · Observado (Res. 781/2022)</h4>
@@ -861,6 +862,13 @@ $('#themeBtn').addEventListener('click',()=>{
 
 const R = DADOS.resumo;
 $('#badgeReal').textContent = `● Dados reais · PNCP · coleta ${R.coletado_em}`;
+if((R.modelo_ml||{}).fidelidade){
+  $('#fidelidadeNota').innerHTML = `<strong>Ressalva de fidelidade:</strong> o SHAP explica o Gradient
+    Boosting ajustado sobre toda a base, enquanto a porcentagem vem do mesmo algoritmo calibrado em 5
+    partições. A concordância de ordenação entre os dois é de
+    ${R.modelo_ml.fidelidade.toLocaleString('pt-BR',{minimumFractionDigits:3})} (Spearman) — parte da
+    diferença é artefato dos empates criados pela calibração isotônica.`;
+}
 $('#foot').innerHTML = `
   <strong>ANTECIPA</strong> — Produto Técnico-Tecnológico (PTT) · versão com <strong>dados reais</strong>:
   ${R.n_contratos} contratos do ${esc(R.orgao)} publicados no PNCP desde 2023

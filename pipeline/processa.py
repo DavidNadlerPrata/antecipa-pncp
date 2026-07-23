@@ -225,6 +225,12 @@ ml_contratos = ml_stf.get("contratos") or {}
 
 
 def nome_fator_ml(nome):
+    """Torna legíveis os nomes de variáveis vindos do modelo.
+
+    O ml_stf_v2.json (SHAP) já entrega nomes prontos e agregados por variável
+    original; os prefixos crus abaixo só ocorrem no ml_stf.json da v1, mantido
+    como fallback. O tratamento de 'faltante:' continua valendo para ambos.
+    """
     if nome.startswith("orgao_"):
         return f"padrão histórico do órgão ({nome[6:]})"
     if nome.startswith("categoria_"):
@@ -309,7 +315,8 @@ resumo = {
 if ml_stf:
     resumo["modelo_ml"] = {"nome": ml_stf.get("modelo"),
                            "treino": ml_stf.get("treinado_em"),
-                           "explicacao": ml_stf.get("explicacao")}
+                           "explicacao": ml_stf.get("explicacao"),
+                           "fidelidade": ml_stf.get("fidelidade_shap_spearman")}
 
 dados = {"resumo": resumo, "processos": procs,
          "fornecedores": sorted(perfis.values(), key=lambda p: -(p["valor_no_stf"] or 0)),
