@@ -250,8 +250,8 @@ casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que 
     <thead><tr>
       <th>Contrato</th><th>Objeto</th><th class="num">Valor global</th>
       <th>Ex-ante<div class="thsub">Res. 781 · na assinatura</div></th>
-      <th>Observado<div class="thsub">Res. 781 · hoje</div></th>
       <th class="num">Previsão ML<div class="thsub">na assinatura</div></th>
+      <th>Observado<div class="thsub">Res. 781 · hoje</div></th>
     </tr></thead><tbody></tbody>
   </table></div>
 </div>
@@ -526,8 +526,8 @@ function renderProcs(){
       <td>${esc(p.obj.slice(0,110))}${p.obj.length>110?'…':''}<div class="small">${esc(p.forn_nome||'')}</div></td>
       <td class="num">${BRLc(p.valor)}</td>
       <td>${badge(p.nivel_ex)}</td>
-      <td>${badge(p.nivel)}${p.nivel_ex!==p.nivel? '<div class="small" title="agravou-se após a assinatura">↑ agravou</div>':''}</td>
-      <td class="num">${mlCell(p)}</td></tr>`;
+      <td class="num">${mlCell(p)}</td>
+      <td>${badge(p.nivel)}${p.nivel_ex!==p.nivel? '<div class="small" title="agravou-se após a assinatura">↑ agravou</div>':''}</td></tr>`;
   }).join('') || `<tr><td colspan="6" class="small" style="padding:16px">Nenhum contrato no filtro.</td></tr>`;
   tb.querySelectorAll('.prow').forEach(r=>{
     const go = ()=>{ state.selProc=r.dataset.id; renderProcs(); renderShap(); };
