@@ -137,6 +137,22 @@ footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--grid);font-si
 .aviso-topo{font-size:12.5px;line-height:1.5;color:var(--ink-2);border:1px solid var(--s4);border-left:4px solid var(--s4);background:color-mix(in srgb,var(--s4) 9%,transparent);padding:9px 14px;border-radius:8px;margin:14px 0 4px}
 .aviso-topo strong{color:var(--ink)}
 .thsub{font-weight:400;text-transform:none;letter-spacing:0;font-size:10.5px;color:var(--muted);margin-top:1px}
+.metodo{margin-top:14px;border:1px solid var(--ring);border-radius:10px;background:color-mix(in srgb,var(--seq-250) 6%,transparent)}
+.metodo>summary{cursor:pointer;padding:9px 14px;font-size:12.5px;font-weight:600;color:var(--ink-2);list-style:none}
+.metodo>summary::-webkit-details-marker{display:none}
+.metodo>summary::before{content:"▸ ";color:var(--seq-550)}
+.metodo[open]>summary::before{content:"▾ "}
+.metodo>summary:hover{color:var(--ink)}
+:root[data-theme="dark"] .metodo>summary::before{color:var(--seq-250)}
+.metodo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:4px 14px 12px}
+@media(max-width:900px){.metodo-grid{grid-template-columns:1fr}}
+.metodo-grid h4{font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink)}
+.metodo-grid p{font-size:11.5px;color:var(--ink-2);margin-bottom:6px;line-height:1.5}
+.metodo-grid ul{margin:0 0 6px 15px;padding:0}
+.metodo-grid li{font-size:11.5px;color:var(--ink-2);margin-bottom:3px;line-height:1.45}
+.metodo-grid b{color:var(--ink);font-variant-numeric:tabular-nums}
+.metodo-comum{font-size:11.5px;color:var(--ink-2);line-height:1.5;padding:0 14px 12px;margin:0;
+  border-top:1px solid var(--grid);padding-top:10px}
 .mlcell{display:flex;align-items:center;gap:7px;justify-content:flex-end}
 .mlbar{width:38px;height:6px;border-radius:3px;background:var(--div-mid);overflow:hidden;flex:none}
 .mlbar>span{display:block;height:100%;border-radius:3px;background:var(--seq-400)}
@@ -263,6 +279,64 @@ casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que 
     <div id="shapChart"></div>
     <div id="outcomeBox"></div>
   </div>
+
+  <details class="metodo">
+    <summary>Como as três leituras são calculadas</summary>
+    <div class="metodo-grid">
+      <div>
+        <h4>1 · Ex-ante (Res. 781/2022)</h4>
+        <p>Escore heurístico transparente que parte de <strong>1,0 ponto</strong> de probabilidade e soma
+          apenas fatores <em>conhecidos no dia da assinatura</em>:</p>
+        <ul>
+          <li>capital social &lt; 2% do volume contratado nacional: <b>+1,2</b> · &gt; 30%: <b>−0,5</b> ·
+            não informado: <b>+0,3</b></li>
+          <li>CNPJ com menos de 3 anos: <b>+0,8</b> · mais de 10 anos: <b>−0,4</b></li>
+          <li>crescimento contratual atípico (≥ 3× a mediana histórica no PNCP): <b>+1,0</b></li>
+          <li>situação cadastral na Receita diferente de “Ativa”: <b>+1,5</b></li>
+          <li>vigência prevista superior a 12 meses: <b>+0,4</b></li>
+        </ul>
+        <p>O total é arredondado e limitado ao intervalo 1–5.</p>
+      </div>
+      <div>
+        <h4>2 · Previsão ML (na assinatura)</h4>
+        <p><strong>Gradient Boosting</strong> com <strong>calibração isotônica</strong> (5 folds), de modo
+          que a porcentagem exibida é frequência real, não escore.</p>
+        <ul>
+          <li><b>Treino:</b> 16.783 contratos de 11 órgãos do Judiciário federal (2022–2025), todos com
+            12 meses completos de observação.</li>
+          <li><b>Rótulo:</b> desfecho adverso em até 12 meses da assinatura — rescisão/extinção,
+            acréscimo de valor &gt; 25% ou prorrogação &gt; 365 dias.</li>
+          <li><b>Variáveis:</b> apenas as disponíveis na assinatura — valor, duração, categoria, órgão,
+            capital social, idade e porte do fornecedor, situação cadastral, razão capital/valor e
+            recorrência no PNCP.</li>
+          <li><b>Na matriz</b>, a probabilidade vira escala 1–5 por faixas fixas: 1 &lt;2% · 2 = 2–5% ·
+            3 = 5–10% · 4 = 10–20% · 5 ≥ 20%.</li>
+        </ul>
+        <p>A explicação por contrato usa as contribuições aditivas (log-odds) de uma regressão logística
+          treinada nos mesmos dados — modelo substituto interpretável, não a decomposição literal da
+          porcentagem exibida.</p>
+      </div>
+      <div>
+        <h4>3 · Observado (Res. 781/2022)</h4>
+        <p>O <em>mesmo</em> escore da leitura 1, acrescido do que já aconteceu com o contrato depois de
+          assinado (marcados com ⟳ no gráfico ao lado):</p>
+        <ul>
+          <li>2 ou mais termos aditivos firmados: <b>+0,8</b></li>
+          <li>valor acumulado &gt; 10% acima do inicial: <b>+0,8</b></li>
+          <li>termo de rescisão/extinção registrado: <b>+1,5</b></li>
+        </ul>
+        <p>Por isso esta leitura é <strong>retrospectiva</strong>: parte do que ela mede já é o próprio
+          problema materializado, e não uma previsão.</p>
+      </div>
+    </div>
+    <p class="metodo-comum"><strong>Comum às leituras 1 e 3 —</strong> o eixo de <strong>impacto</strong>
+      (1–5) é o quintil do valor global do contrato dentro da carteira do STF, e o <strong>nível</strong>
+      resulta do produto probabilidade × impacto nas faixas da norma: ≤ 4 Baixo · ≤ 9 Moderado ·
+      ≤ 16 Elevado · &gt; 16 Crítico. As três leituras compartilham o mesmo eixo de impacto, o que as torna
+      diretamente comparáveis. <strong>Ressalva:</strong> o escore ex-ante é uma reconstrução feita hoje —
+      usa os dados cadastrais atuais da Receita, que podem ter mudado desde a assinatura.</p>
+  </details>
+
   <div class="gov" id="govRow" style="display:none">
     <button class="gbtn validate" id="btnValidate">✓ Validar Risco</button>
     <button class="gbtn fp" id="btnFP">✕ Falso Positivo</button>
