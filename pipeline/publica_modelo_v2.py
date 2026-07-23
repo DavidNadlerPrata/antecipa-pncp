@@ -2,14 +2,21 @@
 """
 ANTECIPA — Publicação do modelo v2 (horizonte 12 meses) CALIBRADO para o dashboard.
 
-* Treina o Gradient Boosting v2 em todos os contratos elegíveis (2022–2025,
-  rótulo de 12 meses) dentro de CalibratedClassifierCV (isotônica, 5 folds):
-  as probabilidades exibidas passam a ser frequências reais, desfazendo a
+* Probabilidade exibida: Gradient Boosting dentro de CalibratedClassifierCV
+  (isotônica, 5 folds) — as porcentagens são frequências reais, desfazendo a
   distorção do class_weight.
-* Pontua TODOS os contratos do STF (inclusive os recentes, não elegíveis para
-  treino — prever é justamente o caso de uso deles) com features idênticas às
-  do treino, lidas do dataset v1.
-* Explicações: contribuições em log-odds da regressão logística v2.
+* Explicações: valores SHAP (TreeExplainer) calculados sobre o PRÓPRIO Gradient
+  Boosting, e não mais sobre uma regressão logística substituta. A troca foi
+  motivada por evidência: a comparação em compara_explicacoes.py mostrou que o
+  fator principal da logística coincidia com o do GB em apenas 12,3% dos
+  contratos (Spearman médio 0,222), porque contribuições de variáveis one-hot
+  são constantes e dominavam a explicação sem discriminar nada.
+
+Nota de fidelidade: o SHAP explica o GB ajustado sobre toda a base de treino,
+enquanto a probabilidade vem do mesmo algoritmo calibrado em 5 partições. O
+script mede e reporta a concordância entre os dois escores (Spearman); como a
+calibração é monotônica, direção e importância relativa dos fatores são
+preservadas.
 
 Saída: dados/processados/ml_stf_v2.json (o ml_stf.json da v1 é preservado).
 """
@@ -19,20 +26,23 @@ import math
 from pathlib import Path
 
 import numpy as np
+import shap
+from scipy.stats import spearmanr
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.impute import SimpleImputer
-from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 BASE = Path(__file__).resolve().parent.parent
 PROC = BASE / "dados" / "processados"
 
+
 def le(nome):
     with open(PROC / nome, encoding="utf-8") as fh:
         return list(csv.DictReader(fh))
+
 
 def num(r, k):
     v = r.get(k, "")
@@ -40,6 +50,7 @@ def num(r, k):
         return float(v)
     except ValueError:
         return np.nan
+
 
 NUM_DEFS = [
     ("log10(valor global)",        lambda r: math.log10(max(num(r, "valor_global"), 1))),
@@ -57,15 +68,12 @@ NUM_DEFS = [
 CAT_COLS = ["categoria", "porte", "orgao"]
 n_num = len(NUM_DEFS)
 
+
 def monta_X(rows):
     Xn = np.array([[f(r) for _, f in NUM_DEFS] for r in rows], dtype=float)
     Xc = np.array([[r[c] or "?" for c in CAT_COLS] for r in rows], dtype=object)
     return np.concatenate([Xn, Xc], axis=1).astype(object)
 
-treino = le("dataset_ml_multi_v2.csv")
-X_tr = monta_X(treino)
-y_tr = np.array([int(r["label_adverso_12m"]) for r in treino])
-print(f"treino (elegíveis v2): {len(treino)} contratos, {y_tr.sum()} adversos")
 
 def faz_pre():
     return ColumnTransformer([
@@ -75,44 +83,82 @@ def faz_pre():
          list(range(n_num, n_num + len(CAT_COLS)))),
     ])
 
-gb = Pipeline([("pre", faz_pre()), ("clf", HistGradientBoostingClassifier(
-    random_state=42, class_weight="balanced", max_depth=4,
-    learning_rate=0.08, max_iter=250, l2_regularization=1.0))])
-cal = CalibratedClassifierCV(gb, method="isotonic", cv=5)
-cal.fit(X_tr, y_tr)
 
-lr = Pipeline([("pre", faz_pre()), ("clf", LogisticRegression(
-    max_iter=5000, class_weight="balanced", C=0.5))])
-lr.fit(X_tr, y_tr)
+def faz_gb():
+    return HistGradientBoostingClassifier(
+        random_state=42, class_weight="balanced", max_depth=4,
+        learning_rate=0.08, max_iter=250, l2_regularization=1.0)
 
-# ------------------------------------------------- pontua todos os contratos STF
+
+treino = le("dataset_ml_multi_v2.csv")
 stf_rows = [r for r in le("dataset_ml_multi.csv") if r["orgao"] == "STF"]
-X_stf = monta_X(stf_rows)
-p_stf = cal.predict_proba(X_stf)[:, 1]
-print(f"STF pontuado: {len(stf_rows)} contratos · prob calibrada mediana "
-      f"{np.median(p_stf)*100:.1f}%, máx {p_stf.max()*100:.1f}%")
+X_tr, X_stf = monta_X(treino), monta_X(stf_rows)
+y_tr = np.array([int(r["label_adverso_12m"]) for r in treino])
+print(f"treino (elegíveis v2): {len(treino)} contratos, {y_tr.sum()} adversos · STF: {len(stf_rows)}")
 
-Xt = lr.named_steps["pre"].transform(X_stf)
-Xt = Xt.toarray() if hasattr(Xt, "toarray") else Xt
-coefs = lr.named_steps["clf"].coef_[0]
-contrib = Xt * coefs
-imp = lr.named_steps["pre"].named_transformers_["num"].named_steps["imp"]
-nomes = [n for n, _ in NUM_DEFS] + \
-    [f"faltante: {NUM_DEFS[i][0]}" for i in imp.indicator_.features_] + \
-    list(lr.named_steps["pre"].named_transformers_["cat"].get_feature_names_out(CAT_COLS))
+# ---------------------------------------------- probabilidade calibrada
+cal = CalibratedClassifierCV(Pipeline([("pre", faz_pre()), ("clf", faz_gb())]),
+                             method="isotonic", cv=5)
+cal.fit(X_tr, y_tr)
+p_stf = cal.predict_proba(X_stf)[:, 1]
+print(f"probabilidade calibrada — mediana {np.median(p_stf)*100:.1f}%, máx {p_stf.max()*100:.1f}%")
+
+# ---------------------------------------------- SHAP sobre o próprio GB
+pre = faz_pre()
+Xt_tr = pre.fit_transform(X_tr)
+Xt_tr = Xt_tr.toarray() if hasattr(Xt_tr, "toarray") else Xt_tr
+Xt_stf = pre.transform(X_stf)
+Xt_stf = Xt_stf.toarray() if hasattr(Xt_stf, "toarray") else Xt_stf
+
+gb = faz_gb()
+gb.fit(Xt_tr, y_tr)
+print("calculando SHAP (TreeExplainer)...")
+sv = shap.TreeExplainer(gb).shap_values(Xt_stf)
+if isinstance(sv, list):
+    sv = sv[1]
+if np.ndim(sv) == 3:
+    sv = sv[:, :, 1]
+shap_vals = np.asarray(sv)
+
+# fidelidade: o GB explicado ordena os contratos como o calibrado?
+rho = spearmanr(gb.decision_function(Xt_stf), p_stf).statistic
+print(f"concordância de ordenação GB explicado × modelo calibrado: Spearman {rho:.4f}")
+
+imp = pre.named_transformers_["num"].named_steps["imp"]
+NOMES = ([n for n, _ in NUM_DEFS]
+         + [f"faltante: {NUM_DEFS[i][0]}" for i in imp.indicator_.features_]
+         + list(pre.named_transformers_["cat"].get_feature_names_out(CAT_COLS)))
+
+# Agregação dos one-hot: o SHAP atribui valor a TODOS os níveis de uma variável
+# categórica, inclusive aos que valem zero (ex.: "orgao_TSE" num contrato do
+# STF, que mede a contribuição de NÃO ser do TSE). Exibir isso confunde o leitor.
+# A prática correta é somar as contribuições dos níveis de uma mesma variável
+# original e rotular com o valor que o contrato de fato assume.
+GRUPOS = {c: [j for j, n in enumerate(NOMES) if n.startswith(f"{c}_")] for c in CAT_COLS}
+ROTULO_GRUPO = {"orgao": "órgão", "categoria": "categoria", "porte": "porte do fornecedor"}
+idx_simples = [j for j, n in enumerate(NOMES)
+               if not any(n.startswith(f"{c}_") for c in CAT_COLS)]
 
 ml = {}
 for i, r in enumerate(stf_rows):
-    ordem = np.argsort(-np.abs(contrib[i]))[:5]
+    itens = [(NOMES[j], float(shap_vals[i][j])) for j in idx_simples]
+    for col, cols_idx in GRUPOS.items():
+        if not cols_idx:
+            continue
+        total = float(shap_vals[i][cols_idx].sum())
+        valor = (r.get(col) or "?").strip() or "?"
+        itens.append((f"{ROTULO_GRUPO[col]}: {valor}", total))
+    itens.sort(key=lambda t: -abs(t[1]))
     ml[r["pncp"]] = {
         "prob": round(float(p_stf[i]), 3),
-        "fatores": [[nomes[j], round(float(contrib[i][j]), 2)]
-                    for j in ordem if abs(contrib[i][j]) > 0.05],
+        "fatores": [[n, round(v, 2)] for n, v in itens[:5] if abs(v) > 0.03],
     }
+
 (PROC / "ml_stf_v2.json").write_text(json.dumps({
     "modelo": "Gradient Boosting v2 · calibração isotônica",
     "treinado_em": "16.783 contratos elegíveis de 11 órgãos do Judiciário federal "
                    "(2022–2025), rótulo de desfecho adverso em 12 meses",
-    "explicacao": "contribuições aditivas em log-odds da regressão logística v2",
+    "explicacao": "valores SHAP (TreeExplainer) sobre o próprio Gradient Boosting",
+    "fidelidade_shap_spearman": round(float(rho), 4),
     "contratos": ml}, ensure_ascii=False), encoding="utf-8")
-print("ml_stf_v2.json publicado (probabilidades calibradas — % = frequência real)")
+print("ml_stf_v2.json publicado — explicações agora por SHAP sobre o modelo em uso")

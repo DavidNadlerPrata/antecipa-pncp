@@ -1,0 +1,9 @@
+{
+ "concordancia": {
+  "spearman_medio": 0.222,
+  "spearman_mediano": 0.227,
+  "pct_mesmo_fator_principal": 12.3,
+  "sobreposicao_media_top3": 56.3,
+  "n_contratos": 293
+ }
+}

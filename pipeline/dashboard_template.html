@@ -312,9 +312,10 @@ casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que 
           <li><b>Na matriz</b>, a probabilidade vira escala 1–5 por faixas fixas: 1 &lt;2% · 2 = 2–5% ·
             3 = 5–10% · 4 = 10–20% · 5 ≥ 20%.</li>
         </ul>
-        <p>A explicação por contrato usa as contribuições aditivas (log-odds) de uma regressão logística
-          treinada nos mesmos dados — modelo substituto interpretável, não a decomposição literal da
-          porcentagem exibida.</p>
+        <p>A explicação por contrato usa <strong>valores SHAP</strong> (TreeExplainer) calculados sobre o
+          <em>próprio</em> Gradient Boosting — o modelo que gera a probabilidade —, em escala de log-odds.
+          Contribuições de variáveis categóricas são somadas por variável original, evitando atribuições a
+          níveis que o contrato não assume.</p>
       </div>
       <div>
         <h4>3 · Observado (Res. 781/2022)</h4>
@@ -706,7 +707,7 @@ function renderShap(){
        ? `<strong>${(p.ml.prob/0.018).toLocaleString('pt-BR',{maximumFractionDigits:1})}× a taxa base</strong> — escore elevado em termos relativos.`
        : 'Próximo da taxa base.'}</p>
    ${(p.ml.fatores||[]).length? `<div class="small" style="margin-top:6px">Principais fatores
-     (contribuições em log-odds da regressão logística):
+     (SHAP sobre o Gradient Boosting, em log-odds):
      ${p.ml.fatores.map(f=>`<span style="white-space:nowrap">${esc(f[0])}
        <strong style="color:${f[1]>0?'var(--div-pos)':'var(--div-neg)'}">${f[1]>0?'+':''}${f[1]}</strong></span>`).join(' · ')}</div>`:''}
   `:'';
