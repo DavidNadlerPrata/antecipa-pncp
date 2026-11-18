@@ -111,8 +111,29 @@ p("Evolução do Produto Técnico-Tecnológico do projeto “Do Controle Reativo
   "IA para Gestão Preditiva de Riscos em Compras Públicas no STF”", italic=True, tam=11, center=True)
 p("Para: Cristina Harumi Matsunaga e Profa. Dra. Marina Figueiredo Moreira (FACE/UnB)",
   cor=CINZA, tam=10, center=True)
-p("Elaborado por David Nadler Prata, com apoio de IA (Claude) · 22 de julho de 2026",
-  cor=CINZA, tam=10, center=True)
+p("Elaborado por David Nadler Prata, com apoio de IA (Claude) · versão de 18 de novembro de 2026 "
+  "(1ª versão: 22 de julho de 2026)", cor=CINZA, tam=10, center=True)
+
+# ------------------------------------------------------- nota desta versão
+doc.add_heading("Nota sobre esta versão", level=1)
+p("Os anexos oficiais da Resolução STF nº 781/2022 e a chave da API do Portal da Transparência, enviados "
+  "pela pesquisadora, permitiram três correções e um avanço em relação à versão de julho:")
+bullet([("Escala oficial da Res. 781/2022. ", True),
+        ("Os anexos mostram que probabilidade e impacto têm níveis 1, 2, 5, 8 e 10, que o risco inerente "
+         "vai de 0 a 100 e que as faixas são Baixo (0–9,9), Moderado (10–39,9), Elevado (40–79,9) e "
+         "Crítico (80–100). A versão anterior usava uma escala 1–5 linear com faixas próprias, que "
+         "divergia da norma. A escala oficial foi centralizada num único módulo do pipeline e passou a "
+         "valer para o painel, para o baseline das avaliações e para este relatório.", False)])
+bullet([("Carteira do STF deduplicada. ", True),
+        ("Os 365 registros publicados no PNCP correspondem a 293 contratos únicos — o painel somava "
+         "cópias de republicações. Os números da carteira foram recalculados.", False)])
+bullet([("Sanções CEIS/CNEP integradas. ", True),
+        ("Os 232 fornecedores do STF foram consultados pela API oficial; a sanção vigente na data da "
+         "assinatura passou a compor o escore ex-ante (seção 4.6).", False)])
+p("As correções mudam a forma do achado da seção 4.4: onde antes se lia “a matriz ex-ante não "
+  "discrimina (lift 1,01×)”, lê-se agora que, na escala oficial, a matriz ex-ante não emite nenhum "
+  "alerta Elevado ou Crítico. Os resultados formais do modelo supervisionado (seções 4.1 a 4.3) não "
+  "mudam, pois usavam o dataset multi-órgão, já deduplicado.")
 
 # ------------------------------------------------------- sumário executivo
 doc.add_heading("Sumário executivo", level=1)
@@ -124,17 +145,19 @@ p("A Prova de Conceito do ANTECIPA, originalmente construída com dados simulado
   "avaliados modelos supervisionados em duas versões — a segunda com rótulo de horizonte fixo de 12 meses "
   "e probabilidades calibradas, hoje publicada no dashboard.")
 p("Resultado central: o Gradient Boosting v2 atinge PR-AUC de 0,139 (6,6 vezes o acaso) e ROC-AUC de "
-  "0,806 em validação temporal, capturando cerca de 4 vezes mais desfechos adversos que a automatização "
-  "das regras da matriz de risco (baseline heurístico), com precisão comparável. Isso sustenta "
+  "0,806 em validação temporal. No mesmo teste em que a automatização das regras da matriz de risco "
+  "(baseline heurístico, na escala oficial da norma) foi avaliada, o modelo tem o dobro da precisão e "
+  "captura cerca de onze vezes mais desfechos adversos. Isso sustenta "
   "empiricamente a alegação central da dissertação — o sistema é preditivo, não um mero automatizador de "
   "regras — e responde diretamente às fragilidades 2.1, 2.2 e 2.7 da análise crítica. Todo o pipeline é "
   "reprodutível em ~5 minutos no Google Colab, sem credenciais, a partir do repositório público no GitHub.")
-p("Achado complementar, e possivelmente o mais contundente para a defesa (seção 4.4): aplicada à carteira "
-  "do STF apenas com dados anteriores à assinatura, a matriz da Res. 781/2022 apresenta precisão de 23,1% "
-  "contra uma taxa base de 22,7% — isto é, não discrimina melhor que o acaso. No mesmo volume de alertas, "
-  "o modelo supervisionado identifica 2,5 vezes mais contratos problemáticos. A automatização das regras, "
-  "isoladamente, não entrega capacidade preditiva; é o aprendizado a partir dos desfechos reais que a "
-  "produz.")
+p("Achado complementar, e possivelmente o mais contundente para a defesa (seção 4.4): na escala oficial "
+  "da Res. 781/2022, alimentada apenas com dados anteriores à assinatura, a matriz de riscos não "
+  "classifica nenhum dos 293 contratos do STF como Elevado ou Crítico. Relaxado o critério para "
+  "“Moderado ou acima”, sua precisão fica abaixo da taxa base. Ordenados os contratos, os 50 primeiros do "
+  "modelo supervisionado contêm três vezes mais desfechos adversos que os 50 primeiros da régua normativa. "
+  "A automatização das regras, isoladamente, não entrega capacidade preditiva; é o aprendizado a partir "
+  "dos desfechos reais que a produz.")
 
 # ------------------------------------------------------- 1. o que foi construído
 doc.add_heading("1. O que foi construído", level=1)
@@ -145,9 +168,10 @@ bullet([("Dashboard com dados reais", True),
          "qualquer navegador, sem servidor.", False)])
 bullet([("Pipeline de coleta idempotente", True),
         (" em Python (somente biblioteca padrão): contratos e termos do STF e de 10 tribunais (STJ, TST, "
-         "TSE, STM, CNJ, TRF2–TRF6), cadastros de 9.598 fornecedores na Receita Federal, preços de "
-         "referência nacionais por item de catálogo — com cache em disco, retry/backoff e passe de reparo "
-         "para janelas bloqueadas por rate-limit.", False)])
+         "TSE, STM, CNJ, TRF2–TRF6), cadastros de 9.598 fornecedores na Receita Federal, sanções CEIS/CNEP "
+         "dos 232 fornecedores do STF no Portal da Transparência, preços de referência nacionais por item de "
+         "catálogo — com cache em disco, retry/backoff e passe de reparo para janelas bloqueadas por "
+         "rate-limit. A chave pessoal da API do Portal fica fora do repositório.", False)])
 bullet([("Dois datasets rotulados pelo desfecho real", True),
         (": v1 (25.488 contratos, rótulo sem horizonte) e v2 (16.783 contratos elegíveis, rótulo de "
          "evento adverso em até 12 meses da assinatura — correção da censura à direita).", False)])
@@ -174,12 +198,14 @@ tabela(
         ["API do PNCP — termos", "Aditivos, apostilamentos e rescisões de cada contrato, com data e valores", "Milhares de termos; base do rótulo"],
         ["API de busca do PNCP", "Presença nacional (todos os órgãos) dos maiores fornecedores do STF", "Top-15 da carteira STF"],
         ["Dados abertos do CNPJ (Receita Federal, via minhareceita.org)", "Capital social, porte, idade, CNAE, situação cadastral, natureza jurídica", "9.598 de 9.600 fornecedores únicos"],
+        ["Portal da Transparência — CEIS e CNEP (API oficial)", "Sanções de empresas: inidoneidade, impedimento, suspensão, Lei Anticorrupção", "232 fornecedores do STF; 19 com registro"],
         ["Pesquisa de preços do compras.gov.br + catálogo de PDMs", "Distribuição nacional de preços homologados por item (Módulo 1)", "7 itens com amostra nacional"],
     ],
     [4.5, 8.0, 4.0])
 p("Recorte temporal: vigência plena da Lei 14.133/2021 (2023 em diante), conforme decisão metodológica "
-  "do projeto. No STF: 365 registros de contrato (R$ 1,195 bilhão em valor global), 237 termos aditivos e "
-  "22 rescisões/extinções — 22,7% dos contratos com algum desfecho adverso observável.")
+  "do projeto. No STF: 293 contratos únicos (365 registros no PNCP, por causa de republicações), R$ 996 "
+  "milhões em valor global, 179 termos aditivos e 16 rescisões/extinções — 62 contratos (21,2%) com "
+  "algum desfecho adverso observável.")
 
 # ------------------------------------------------------- 3. metodologia
 doc.add_heading("3. Rotulagem pelo desfecho real e modelagem", level=1)
@@ -203,9 +229,19 @@ doc.add_heading("3.3 Protocolo de avaliação (resposta à fragilidade 2.7)", le
 p("Validação temporal (treino 2023–2024, teste 2025; contratos de 2026 excluídos da avaliação na v1 por "
   "rótulo imaturo), métricas para classe rara — precision, recall e F1 da classe positiva, PR-AUC e "
   "ROC-AUC; nunca acurácia. Limiar de decisão escolhido no treino (máximo F1 em validação cruzada), "
-  "jamais no teste. Baseline heurístico avaliado nas mesmas condições.")
+  "jamais no teste. Baseline heurístico avaliado nas mesmas condições, com alerta definido como Elevado "
+  "ou Crítico na escala oficial da Res. 781/2022 (risco inerente igual ou superior a 40).")
 
 doc.add_heading("3.4 As três leituras de risco e como cada uma é calculada", level=2)
+p("Escala oficial da Res. 781/2022. ", bold=True)
+p("Conforme os anexos da norma, probabilidade e impacto têm cinco níveis, com valores 1, 2, 5, 8 e 10 "
+  "(Muito baixa/o, Baixa/o, Média/o, Alta/o, Muito alta/o), acompanhados de descritores qualitativos — "
+  "da probabilidade “Rara” à “Praticamente certa”, do impacto “Insignificante” ao “Catastrófico”. O risco "
+  "inerente é o produto dos dois valores, de 0 a 100, classificado em Baixo (0–9,9), Moderado (10–39,9), "
+  "Elevado (40–79,9) e Crítico (80–100). A norma define ainda o risco residual, igual ao inerente "
+  "multiplicado por um fator de eficácia dos controles (de 1,0, controle inexistente, a 0,2, controle "
+  "forte). Como dados públicos não informam a eficácia dos controles internos, o painel calcula apenas o "
+  "risco inerente.")
 p("O painel apresenta cada contrato sob três leituras distintas, que respondem a perguntas diferentes e "
   "não devem ser confundidas. Duas delas são ex-ante (usam apenas o que se sabia no dia da assinatura) e "
   "uma é retrospectiva. A distinção é essencial para interpretar corretamente os resultados da seção 4.")
@@ -219,7 +255,10 @@ bullet("CNPJ com menos de 3 anos: +0,8; com mais de 10 anos: −0,4")
 bullet("crescimento contratual atípico (3 ou mais vezes a mediana histórica no PNCP): +1,0")
 bullet("situação cadastral na Receita diferente de “Ativa”: +1,5")
 bullet("vigência prevista superior a 12 meses (serviço continuado): +0,4")
-p("O total é arredondado e limitado ao intervalo 1–5 da escala normativa.")
+bullet("sanção no CEIS ou no CNEP em vigor e já publicada na data da assinatura — portanto consultável "
+       "antes de contratar: +2,0")
+p("O total é arredondado e limitado a 1–5, posição que indica o nível de probabilidade da norma: Muito "
+  "baixa (1), Baixa (2), Média (5), Alta (8) ou Muito alta (10).")
 
 p("(b) Probabilidade prevista na assinatura — modelo supervisionado. ", bold=True)
 p("Gradient Boosting com calibração isotônica (5 folds), de modo que a porcentagem exibida corresponde a "
@@ -230,9 +269,12 @@ bullet("rótulo: desfecho adverso em até 12 meses da assinatura — rescisão/e
        "superior a 25% ou prorrogação superior a 365 dias")
 bullet("variáveis: apenas as disponíveis na assinatura — valor global, duração, categoria, órgão, capital "
        "social, idade e porte do fornecedor, situação cadastral, razão capital/valor e recorrência no PNCP")
-bullet("na matriz de riscos, a probabilidade contínua é convertida para a escala 1–5 por faixas fixas "
-       "(1: abaixo de 2%; 2: de 2 a 5%; 3: de 5 a 10%; 4: de 10 a 20%; 5: 20% ou mais), ancoradas na taxa "
-       "base e não em quantis, para permanecerem comparáveis entre períodos e órgãos")
+bullet("na matriz de riscos, a probabilidade contínua é convertida para os níveis da norma por faixas "
+       "fixas — Muito baixa (1): abaixo de 2%; Baixa (2): de 2 a 5%; Média (5): de 5 a 10%; Alta (8): de "
+       "10 a 20%; Muito alta (10): 20% ou mais —, ancoradas na taxa base e não em quantis, para "
+       "permanecerem comparáveis entre períodos e órgãos. A correspondência com os descritores "
+       "qualitativos é provisória: 20% já é mais de onze vezes a taxa base, mas está longe de "
+       "“praticamente certa”")
 p("A explicação por contrato utiliza valores SHAP (TreeExplainer) calculados sobre o próprio Gradient "
   "Boosting — o modelo que gera a probabilidade —, em escala de log-odds. As contribuições de variáveis "
   "categóricas são somadas por variável original, de modo que não sejam exibidas atribuições a níveis "
@@ -248,13 +290,15 @@ p("Trata-se, portanto, de leitura retrospectiva: parte do que ela mede já é o 
   "leitura e apresentar probabilidade modesta nas leituras ex-ante.")
 
 p("Elementos comuns e ressalva. ", bold=True)
-p("Nas leituras (a) e (c), o eixo de impacto (1–5) é o quintil do valor global do contrato dentro da "
-  "carteira do STF, e o nível resulta do produto probabilidade × impacto nas faixas da norma: até 4 "
-  "Baixo; até 9 Moderado; até 16 Elevado; acima de 16 Crítico. As três leituras compartilham o mesmo eixo "
-  "de impacto, o que as torna diretamente comparáveis. Registre-se, contudo, que o escore ex-ante é uma "
-  "reconstrução realizada no presente: utiliza os dados cadastrais atuais da Receita Federal, que podem "
-  "ter se alterado desde a data de assinatura. A versão rigorosa exigiria séries históricas de dados "
-  "cadastrais, não disponíveis na base aberta.")
+p("Nas três leituras, o impacto é o quintil do valor global do contrato dentro da carteira do STF, "
+  "mapeado nos cinco níveis da norma (Muito baixo, valor 1, a Muito alto, valor 10), e o nível de risco "
+  "resulta do produto probabilidade × impacto nas faixas oficiais. Compartilhar o mesmo eixo de impacto "
+  "torna as leituras diretamente comparáveis. Registre-se, contudo, que a norma traz apenas descritores "
+  "qualitativos, sem regras de conversão de dados em níveis: a tabela de pontos acima é operacionalização "
+  "própria, em validação com os gestores de risco do STF (seção 7). E o escore ex-ante é uma reconstrução "
+  "realizada no presente: utiliza os dados cadastrais atuais da Receita Federal, que podem ter se alterado "
+  "desde a data de assinatura; a versão rigorosa exigiria séries históricas de dados cadastrais, não "
+  "disponíveis na base aberta.")
 
 # ------------------------------------------------------- 4. resultados
 doc.add_heading("4. Resultados", level=1)
@@ -265,11 +309,14 @@ tabela(
         ["Gradient Boosting v2 (12 meses)", "0,109", "0,494", "0,179", "0,139 (lift 6,6×)", "0,806"],
         ["Regressão Logística v2", "0,052", "0,647", "0,096", "0,065", "0,755"],
         ["Gradient Boosting v1", "0,064", "0,393", "0,111", "0,071 (lift 4,4×)", "0,798"],
-        ["Baseline heurístico (Res. 781)", "0,067", "0,129", "0,088", "0,033 (lift 2×)", "0,705"],
+        ["Baseline heurístico (Res. 781, escala oficial)", "0,032", "0,036", "0,034", "0,031 (lift ~1,9×)", "0,701"],
     ],
     [5.2, 2.2, 2.0, 1.8, 3.2, 2.1])
-p("Leitura: o modelo aprende sinal real que as regras não capturam — com precisão comparável à do "
-  "baseline, encontra quase 4 vezes mais desfechos adversos. A v2 domina a v1 em todas as métricas "
+p("Leitura: o modelo aprende sinal real que as regras não capturam. O baseline foi avaliado no mesmo "
+  "teste e com o mesmo rótulo do Gradient Boosting v1; contra ele, o modelo tem o dobro da precisão (0,064 "
+  "contra 0,032) e encontra cerca de onze vezes mais desfechos adversos (recall de 0,393 contra 0,036) — "
+  "na escala oficial, a régua normativa emite 154 alertas e acerta 5 dos 140 casos. A v2 domina a v1 em "
+  "todas as métricas "
   "relevantes (a comparação correta entre versões é pelo lift sobre o acaso, pois testes e rótulos "
   "diferem). Em visão operacional de fila de diligência: entre os 100 contratos de 2025 com maior escore "
   "v2, 16 tiveram desfecho adverso real em 12 meses — 7,6 vezes a taxa base — capturando 19% de todos os "
@@ -326,28 +373,35 @@ p("As explicações por contrato usam valores SHAP calculados sobre o próprio G
   "(fragilidade 2.8). A seção seguinte documenta a evidência que levou a substituir a abordagem "
   "anteriormente adotada.")
 
-doc.add_heading("4.4 Aplicação à carteira do STF: a matriz ex-ante não discrimina", level=2)
-p("Aplicando os dois critérios de alerta aos 365 contratos do STF publicados no PNCP (taxa base de "
-  "desfecho adverso: 22,7%), obtém-se o resultado abaixo. O escore ex-ante é o mesmo escore heurístico "
-  "da Res. 781/2022, porém calculado apenas com os fatores conhecidos no dia da assinatura — a leitura "
-  "que o sistema teria exibido ao gestor antes de contratar.")
+doc.add_heading("4.4 Aplicação à carteira do STF: na escala oficial, a matriz ex-ante não emite alerta",
+                level=2)
+p("Aplicando os critérios de alerta aos 293 contratos únicos do STF publicados no PNCP (taxa base de "
+  "desfecho adverso: 21,2%), obtém-se o resultado abaixo. O escore ex-ante é o mesmo escore heurístico "
+  "da Res. 781/2022, na escala oficial da norma, porém calculado apenas com os fatores conhecidos no dia "
+  "da assinatura — a leitura que o sistema teria exibido ao gestor antes de contratar.")
 tabela(
     ["Critério de alerta", "Alertas", "Acertos", "Precisão", "Recall", "Lift"],
     [
-        ["Ex-ante (Res. 781, Elevado/Crítico)", "52", "12", "23,1%", "14,5%", "1,01×"],
-        ["ML ≥ 20%", "100", "57", "57,0%", "68,7%", "2,51×"],
-        ["ML ≥ 10%", "159", "65", "40,9%", "78,3%", "1,80×"],
-        ["ML ≥ 5%", "232", "74", "31,9%", "89,2%", "1,40×"],
-        ["ML top-52 (mesmo volume do ex-ante)", "52", "30", "57,7%", "36,1%", "2,54×"],
-        ["(referência) Observado, Elevado/Crítico", "66", "22", "33,3%", "26,5%", "1,47×"],
+        ["Ex-ante (Res. 781) — Elevado/Crítico", "0", "0", "—", "0,0%", "—"],
+        ["Ex-ante (Res. 781) — Moderado ou acima", "158", "32", "20,2%", "51,6%", "0,96×"],
+        ["Ex-ante top-50 (ordenado pelo escore)", "50", "9", "18,0%", "14,5%", "0,85×"],
+        ["ML top-50 (probabilidade)", "50", "27", "54,0%", "43,5%", "2,55×"],
+        ["Ex-ante top-100", "100", "19", "19,0%", "30,6%", "0,90×"],
+        ["ML top-100", "100", "49", "49,0%", "79,0%", "2,32×"],
+        ["ML ≥ 20%", "82", "45", "54,9%", "72,6%", "2,59×"],
+        ["ML ≥ 10%", "128", "51", "39,8%", "82,3%", "1,88×"],
+        ["(referência, circular) Observado — Elevado/Crítico", "20", "17", "85,0%", "27,4%", "4,02×"],
     ],
-    [5.8, 1.9, 1.9, 1.9, 1.8, 1.7])
-p("O achado central: a heurística ex-ante apresenta precisão de 23,1% contra uma taxa base de 22,7% — "
-  "lift de 1,01×. Nesta carteira ela não discrimina: sortear 52 contratos ao acaso acertaria "
-  "praticamente o mesmo (esperado ~11,8; obtido 12), diferença inteiramente dentro do ruído estatístico. "
-  "Comparados no mesmo custo operacional (52 alertas para cada método), o modelo identifica 30 contratos "
-  "problemáticos contra 12 da régua normativa — 2,5 vezes mais.")
-p("Três ressalvas indispensáveis para a leitura correta desta tabela:", bold=True)
+    [6.4, 1.7, 1.7, 1.7, 1.6, 1.6])
+p("O achado central: na escala oficial, a leitura ex-ante não classifica nenhum contrato como Elevado ou "
+  "Crítico. Com os fatores disponíveis antes da assinatura, a probabilidade ex-ante de todos os 293 "
+  "contratos fica em Muito baixa (1) ou Baixa (2); mesmo com impacto máximo (10), o risco inerente chega "
+  "no máximo a 20 — Moderado. Na matriz de riscos ex-ante do painel, todos os contratos ocupam apenas as "
+  "duas primeiras colunas de probabilidade. Relaxando o critério para “Moderado ou acima”, a precisão "
+  "(20,2%) fica abaixo da própria taxa base. E, ordenados os contratos pelo escore contínuo, os 50 "
+  "primeiros da régua normativa contêm 9 desfechos adversos, contra 27 entre os 50 primeiros do modelo — "
+  "três vezes mais, no mesmo custo operacional.")
+p("Ressalvas indispensáveis para a leitura correta desta tabela:", bold=True)
 bullet([("Viés in-sample nos números do ML. ", True),
         ("Os contratos do STF integraram o treino do modelo calibrado (2022–2025, 11 órgãos), de modo "
          "que os valores acima são otimistas. A medição fora da amostra é a da seção 4.1: precisão de "
@@ -362,14 +416,46 @@ bullet([("Por que a heurística falha justamente no STF. ", True),
         ("A carteira do Tribunal é homogeneamente de alto risco pelos critérios da norma: quase tudo é "
          "serviço continuado, longo e de valor elevado. As variáveis que a heurística usa para "
          "discriminar (quantil de valor, vigência superior a 12 meses) estão saturadas — se todos "
-         "pontuam, ninguém se destaca. Numa base multi-órgão heterogênea ela ainda apresentava algum "
-         "sinal (lift próximo de 4× na avaliação formal); dentro do STF, esse sinal desaparece.", False)])
+         "pontuam, ninguém se destaca.", False)])
+bullet([("O “zero alertas” depende da tabela de pontos. ", True),
+        ("O resultado combina a escala oficial com a operacionalização própria da seção 3.4, que "
+         "concentra a probabilidade ex-ante em 1 e 2 porque os fatores disponíveis antes da assinatura são "
+         "poucos e de peso moderado. Se a validação com os gestores do STF elevar os pesos, o número de "
+         "alertas mudará — o que torna essa validação parte do resultado, e não mero detalhe.", False)])
+bullet([("A leitura observada é circular. ", True),
+        ("Sua precisão de 85% decorre de usar o próprio desfecho que pretende sinalizar; aparece na tabela "
+         "apenas como referência.", False)])
 p("Este é, na avaliação técnica deste relatório, o resultado mais forte do trabalho para a defesa: "
-  "automatizar a matriz da Res. 781/2022 com dados anteriores à assinatura não produz capacidade "
+  "operacionalizar a matriz da Res. 781/2022 com dados anteriores à assinatura não produz capacidade "
   "preditiva na carteira do STF — e é precisamente essa lacuna que o modelo supervisionado preenche. "
-  "Reforça-se, porém, a contrapartida operacional: 100 a 160 alertas numa carteira de 365 contratos "
+  "Reforça-se, porém, a contrapartida operacional: 80 a 130 alertas numa carteira de 293 contratos "
   "excedem a capacidade de diligência de qualquer equipe, o que sustenta o uso do modelo como fila de "
   "priorização (top-N por probabilidade) em vez de alerta binário.")
+p("Probabilidade pura × matriz: réguas para perguntas diferentes. ", bold=True)
+p("A matriz de riscos do modelo (probabilidade convertida nos níveis da norma e multiplicada pelo "
+  "impacto) e o ranqueamento pela probabilidade pura não são versões melhor e pior do mesmo instrumento — "
+  "otimizam objetivos distintos. Avaliadas por precisão sobre “deu errado”, no mesmo conjunto:")
+tabela(
+    ["Critério", "Alertas", "Acertos", "Precisão", "Recall", "Lift"],
+    [
+        ["Matriz ML — Elevado/Crítico", "91", "29", "31,9%", "46,8%", "1,51×"],
+        ["Matriz ML — só Crítico", "40", "18", "45,0%", "29,0%", "2,13×"],
+        ["ML ≥ 20% (probabilidade pura, volume ~igual)", "82", "45", "54,9%", "72,6%", "2,59×"],
+        ["ML top-50 (probabilidade pura)", "50", "27", "54,0%", "43,5%", "2,55×"],
+    ],
+    [6.4, 1.7, 1.7, 1.7, 1.6, 1.6])
+p("Em volume semelhante de alertas (91 e 82), a probabilidade pura é mais precisa que a matriz (54,9% "
+  "contra 31,9%): "
+  "multiplicar pelo impacto dilui o sinal preditivo, porque o eixo de impacto — o quantil do valor do "
+  "contrato — mede a consequência de um problema, não a sua probabilidade. Isso não é defeito da matriz: "
+  "ela otimiza perda esperada, não taxa de acerto. Um contrato com 10% de chance de problema em R$ 500 "
+  "milhões merece mais atenção que um com 25% em R$ 50 mil, e é exatamente essa priorização que a "
+  "ponderação por impacto captura, ao custo de errar mais em quantidade.")
+p("A implicação metodológica é usar a régua conforme a pergunta. Para “quais contratos vão dar "
+  "problema?”, ordena-se pela probabilidade pura. Para “onde alocar a diligência considerando o estrago "
+  "potencial?”, usa-se a matriz. Avaliar a matriz por precisão sobre o desfecho é, em rigor, medi-la por "
+  "um objetivo que não é o dela — daí a coexistência das três leituras no painel, cada uma respondendo a "
+  "uma pergunta distinta.")
 
 doc.add_heading("4.5 Escolha da técnica de explicação: SHAP × modelo substituto", level=2)
 p("A primeira versão do painel exibia, como explicação de cada contrato, as contribuições aditivas de uma "
@@ -441,6 +527,32 @@ p("Registre-se, por fim, que a alternativa oposta permanece defensável e merece
   "pode pesar mais que pontos de acurácia, essa troca é argumentável. O que não se sustenta é a "
   "combinação anteriormente adotada — modelo de árvores explicado por modelo linear distinto.")
 
+doc.add_heading("4.6 Sanções CEIS/CNEP dos fornecedores do STF", level=2)
+p("Com a chave da API do Portal da Transparência, os 232 fornecedores pessoa jurídica da carteira do STF "
+  "foram consultados no CEIS (Cadastro de Empresas Inidôneas e Suspensas) e no CNEP (Cadastro Nacional de "
+  "Empresas Punidas), em 18 de novembro de 2026. Dezenove fornecedores (8,2%) têm registro — todos no "
+  "CEIS, nenhum no CNEP. Um único fornecedor concentra quase trinta sanções, entre elas uma declaração de "
+  "inidoneidade pelo TCU e duas sanções aplicadas pelo próprio STF.")
+bullet([("O fator ex-ante de sanção não disparou em nenhum contrato. ", True),
+        ("Nenhum fornecedor tinha sanção em vigor e já publicada na data da assinatura: todas as 66 "
+         "combinações contrato–sanção referem-se a sanções iniciadas depois. É o resultado esperado, pois "
+         "a Lei 14.133/2021 (art. 91, § 4º) obriga a consultar CEIS e CNEP antes de formalizar o "
+         "contrato — o controle prévio funcionou na carteira examinada.", False)])
+bullet([("Vinte e três contratos têm fornecedor sancionado posteriormente ", True),
+        ("(oito dessas combinações por sanção do próprio STF). O painel exibe essa informação no "
+         "detalhamento de cada contrato, separada do escore ex-ante, já que não era conhecida na "
+         "assinatura.", False)])
+bullet([("Verificação exploratória com resultado nulo. ", True),
+        ("Testou-se se a sanção posterior, sinal independente do rótulo, validaria o modelo. Não validou: "
+         "esses 23 contratos tiveram desfecho adverso de 13,0%, contra 21,9% dos demais (teste exato de "
+         "Fisher, p = 0,43), e probabilidade mediana prevista de 9,9%, contra 7,5% (Mann-Whitney "
+         "unilateral, p = 0,12). Com apenas 23 casos o teste tem pouco poder, e as sanções refletem "
+         "condutas perante outros órgãos, enquanto o rótulo mede aditivos e prorrogações do próprio "
+         "contrato. Registra-se o resultado nulo, sem forçar interpretação.", False)])
+p("A chave da API é pessoal e não integra o repositório público: o script de coleta a lê de uma variável "
+  "de ambiente ou de um arquivo fora da pasta do projeto e, na ausência dela, usa o cache já coletado.",
+  italic=True, cor=CINZA, tam=9.5)
+
 # ------------------------------------------------------- 5. achados
 doc.add_heading("5. Achados de engenharia de dados (material para a dissertação)", level=1)
 bullet([("O STF não preenche o código CATMAT/CATSER", True),
@@ -449,8 +561,10 @@ bullet([("O STF não preenche o código CATMAT/CATSER", True),
          "compras.gov.br. Confirma na prática o item 2.4 da análise crítica: a maior parte do esforço é "
          "engenharia e limpeza de dados.", False)])
 bullet([("As listas paginadas do PNCP contêm duplicatas", True),
-        (" (republicações/retificações): o TST retorna 13.765 registros para 9.407 contratos únicos. "
-         "Deduplicação por numeroControlePncp é obrigatória em qualquer uso analítico do PNCP.", False)])
+        (" (republicações/retificações): o TST retorna 13.765 registros para 9.407 contratos únicos, e o "
+         "próprio STF, 365 registros para 293 contratos. Deduplicação por numeroControlePncp é obrigatória "
+         "em qualquer uso analítico do PNCP — inclusive no painel, que até a versão de julho somava as "
+         "cópias.", False)])
 bullet([("CNPJs raiz agregam unidades", True),
         (": TST e TSE, pelo CNPJ raiz, trazem as unidades regionais da Justiça do Trabalho e Eleitoral — "
          "útil para volume, mas exige atenção ao interpretar “órgão”.", False)])
@@ -463,6 +577,10 @@ bullet([("Consórcios aparecem com capital social zero", True),
 bullet([("A API do PNCP aplica rate-limit", True),
         (" (HTTP 429) em coletas longas; o pipeline usa retry com backoff e um passe de reparo. Pequenas "
          "lacunas residuais estão documentadas no repositório.", False)])
+bullet([("A API do Portal da Transparência exige chave pessoal", True),
+        (" e limita as requisições (cerca de 90 por minuto em horário diurno); datas vêm no formato "
+         "dd/mm/aaaa e o fim de uma sanção pode ser indeterminado. Para distinguir o que era consultável "
+         "antes de contratar, usa-se a data de publicação da sanção, não apenas a de início.", False)])
 
 # ------------------------------------------------------- 6. análise crítica
 doc.add_heading("6. Correspondência com a análise crítica", level=1)
@@ -471,7 +589,7 @@ tabela(
     [
         ["1. Rotular pelo desfecho real, não pela matriz", "Implementada (v1 e v2; horizonte de 12 meses na v2)"],
         ["2. Treinar multi-órgão e aplicar ao STF", "Implementada + experimento próprio com bootstrap (seção 4.2)"],
-        ["3. APIs oficiais em vez de raspagem", "Implementada; sanções (CEIS/CNEP, SICAF, CNDT) pendentes de chave institucional"],
+        ["3. APIs oficiais em vez de raspagem", "Implementada, incluindo CEIS/CNEP via API do Portal da Transparência (seção 4.6); SICAF e CNDT pendentes de acesso institucional"],
         ["4. Dimensionar limpeza/normalização CATMAT", "Confirmada na prática; ponte descrição→PDM construída para 7 itens"],
         ["5. Normativo: alerta dispara diligência, nunca inabilitação", "Institucional — reforçada nos textos do dashboard e relatórios"],
         ["6. Monitorar concordância humano-máquina", "Pendente (exige uso real com servidores)"],
@@ -484,15 +602,21 @@ tabela(
 
 # ------------------------------------------------------- 7. nota 781
 doc.add_heading("7. Nota importante: operacionalização da Res. 781/2022", level=1)
-p("A Res. 781/2022 fornece a moldura (escalas 1–5 de probabilidade e impacto, classificação pelo "
-  "produto), mas não fornece uma tabela que converta dados observáveis em pontos. A tabela de pesos usada "
-  "no baseline heurístico (ex.: capital/volume < 2% → +1,2; empresa < 3 anos → +0,8) é uma "
-  "operacionalização proposta neste trabalho — plausível, porém arbitrária. Recomenda-se fortemente: "
-  "(a) obter internamente o texto e anexos da resolução; (b) validar/calibrar o quadro de mapeamento "
-  "(descritor da norma → proxy de dados → pontos) com os gestores de risco do STF, no processo de "
-  "co-design já previsto no projeto; (c) documentar esse quadro na dissertação. Importante: o resultado "
-  "central (modelo supervisionado) não depende dessa tabela — o rótulo vem do desfecho real, justamente "
-  "para escapar da circularidade.")
+p("Os anexos da Resolução — escalas de probabilidade, de impacto, de nível de risco e de eficácia dos "
+  "controles, além dos modelos de lista de eventos, diagrama bow-tie e plano de tratamento — foram "
+  "incorporados nesta versão, e a escala oficial substituiu a régua linear usada antes. Os anexos "
+  "confirmam, porém, que a norma traz apenas descritores qualitativos e não define como converter dados "
+  "observáveis em níveis. A tabela de pesos usada no escore heurístico (por exemplo, capital/volume "
+  "abaixo de 2% → +1,2; empresa com menos de 3 anos → +0,8; sanção vigente na assinatura → +2,0) "
+  "permanece, portanto, uma operacionalização proposta neste trabalho — plausível, porém arbitrária.")
+p("A validação desse quadro com os gestores de risco do STF, já em curso, é decisiva por dois motivos. "
+  "Primeiro, legitima o escore perante a instituição. Segundo, condiciona diretamente o achado da seção "
+  "4.4: o “zero alertas ex-ante” depende dos pesos. Sugere-se documentar na dissertação, para cada fator, "
+  "o descritor da norma que ele pretende sustentar, o proxy de dados usado, o peso e a justificativa "
+  "validada. O mesmo vale para a correspondência entre as faixas de probabilidade do modelo e os "
+  "descritores qualitativos (“Rara” … “Praticamente certa”). Importante: o resultado central (modelo "
+  "supervisionado) não depende dessa tabela — o rótulo vem do desfecho real, justamente para escapar da "
+  "circularidade.")
 
 # ------------------------------------------------------- 8. limitações
 doc.add_heading("8. Limitações honestas", level=1)
@@ -509,14 +633,20 @@ bullet("Comparações de preço por PDM agregam especificações heterogêneas: 
 bullet("As explicações SHAP descrevem o Gradient Boosting ajustado sobre toda a base, enquanto a "
        "probabilidade exibida provém do mesmo algoritmo calibrado em cinco partições — concordância de "
        "ordenação de 0,878 (Spearman), parcialmente reduzida por empates da calibração (seção 4.5).")
+bullet("O painel calcula apenas o risco inerente: o risco residual da norma depende da avaliação da "
+       "eficácia dos controles internos de cada unidade, que não é dado público.")
+bullet("As sanções CEIS/CNEP foram consultadas apenas para os fornecedores do STF e entram no escore "
+       "heurístico, não no modelo supervisionado; SICAF e CNDT seguem fora, por falta de API pública.")
 
 # ------------------------------------------------------- 9. próximos passos
 doc.add_heading("9. Próximos passos recomendados (em ordem de custo-benefício)", level=1)
-bullet([("Chave gratuita da API do Portal da Transparência", True),
-        (" (cadastro por e-mail) → CEIS/CNEP reais no Módulo 2 e possível enriquecimento do rótulo com "
-         "sanções aplicadas.", False)])
-bullet([("Validar a operacionalização da Res. 781 com os gestores", True),
-        (" (seção 7) e registrar o quadro de mapeamento na dissertação.", False)])
+bullet([("Concluir a validação da tabela de pontos com os gestores do STF", True),
+        (" (seção 7), já em curso, e registrar o quadro de mapeamento na dissertação; em seguida, "
+         "reprocessar o painel com os pesos validados e verificar como muda o achado da seção 4.4.", False)])
+bullet([("Sanções de todos os fornecedores no modelo", True),
+        (": com a chave já disponível, coletar CEIS/CNEP dos cerca de 9.600 fornecedores do dataset "
+         "multi-órgão (algumas horas de coleta, pelo limite da API) e testar a sanção prévia como variável "
+         "do modelo supervisionado, com nova avaliação temporal.", False)])
 bullet([("Custo assimétrico explícito", True),
         (" (falso negativo em contrato crítico vs. falso positivo) como peso amostral — transforma o "
          "balanceamento em decisão de gestão documentável (item 2.7).", False)])

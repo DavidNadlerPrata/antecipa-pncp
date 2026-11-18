@@ -8,3 +8,10 @@ __pycache__/
 # Gravado em ../ (fora desta pasta) por gera_relatorio.py; nunca publicar.
 # Entrada defensiva caso o arquivo seja movido para dentro do repositório.
 *.docx
+
+# credenciais (a chave do Portal da Transparência fica em ~/.antecipa/, fora
+# do repositório e do Drive; entradas defensivas)
+*.key
+.env
+.env.*
+segredos/

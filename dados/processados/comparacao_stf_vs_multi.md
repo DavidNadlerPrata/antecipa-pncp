@@ -20,10 +20,12 @@ histórico de um único órgão pode ser insuficiente para treinar sem overfitti
 | Só STF · Gradient Boosting | 0.136 | 0.846 | 0.234 | 0.384 | 0.712 | 81 |
 | Multi-órgão · Regressão Logística | 0.148 | 0.923 | 0.255 | 0.122 | 0.5 | 81 |
 | Multi-órgão · Gradient Boosting | 0.154 | 0.615 | 0.246 | 0.319 | 0.644 | 52 |
-| Baseline heurístico (Res. 781) | 0.2 | 0.077 | 0.111 | 0.124 | 0.475 | 5 |
+| Baseline heurístico (Res. 781, Elevado/Crítico) | 0.0 | 0.0 | 0.0 | 0.125 | 0.478 | 2 |
 
 Prevalência no teste (PR-AUC de um classificador aleatório):
-0.123.
+0.123. O baseline usa a escala oficial da Res. STF
+781/2022 (níveis 1-2-5-8-10, risco inerente 0–100, alerta = Elevado ou Crítico,
+isto é, risco ≥ 40).
 
 ## Notas de leitura
 
@@ -38,19 +40,18 @@ Prevalência no teste (PR-AUC de um classificador aleatório):
   STF 2023–24) e por isso tende a generalizar melhor — é a recomendação nº 2 da
   análise crítica em ação.
 
-## Teste de significância (bootstrap, 4.000 reamostras do teste)
+## Teste de significância (bootstrap, 4000 reamostras do teste)
 
 Δ PR-AUC (só-STF − multi-órgão, Gradient Boosting): **+0,069**,
-IC 95 % **[−0,221; +0,350]** — o intervalo cruza zero com folga.
-O modelo só-STF vence em apenas 69 % das reamostras.
+IC 95 % **[-0,221; +0,350]** — o intervalo cruza zero.
+O modelo só-STF vence em 69 % das reamostras.
 
-**Conclusão**: empate técnico. Com 13 positivos no teste, não há evidência
-estatística de superioridade de nenhum dos dois. A leitura equilibrada para a
-dissertação: (i) o padrão local do STF carrega sinal específico relevante
-(prevalência de desfecho adverso 33 % no treino só-STF vs. 5 % no multi) e um
-modelo local pequeno já supera o baseline heurístico; (ii) o modelo multi-órgão
-entrega desempenho comparável no STF com 84× mais dados de treino, é muito mais
-estável fora da amostra e é o único viável para métricas confiáveis — o que
-sustenta, com nuance, a recomendação nº 2 da análise crítica: treinar
-multi-órgão e, como refinamento futuro, calibrar/afinar por órgão
-(*fine-tuning* local sobre o modelo nacional).
+**Leitura**: com 13 positivos no teste, diferenças desta ordem não
+têm significância estatística. (i) O padrão local do STF carrega sinal específico
+relevante (prevalência de desfecho adverso 33 % no treino
+só-STF vs. 5 % no multi) e um modelo local pequeno já
+supera o baseline heurístico; (ii) o modelo multi-órgão entrega desempenho
+comparável no STF com 84× mais dados de
+treino, é mais estável fora da amostra e é o único viável para métricas
+confiáveis — o que sustenta, com nuance, a recomendação nº 2: treinar multi-órgão
+e, como refinamento futuro, calibrar/afinar por órgão.

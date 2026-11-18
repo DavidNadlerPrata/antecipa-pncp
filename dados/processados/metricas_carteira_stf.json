@@ -1,0 +1,140 @@
+{
+ "n_contratos": 293,
+ "n_adversos": 62,
+ "taxa_base": 0.2116,
+ "escala": "Res. STF 781/2022 — níveis 1-2-5-8-10, risco inerente 0–100",
+ "distribuicao": {
+  "ex-ante": {
+   "Baixo": 135,
+   "Moderado": 158
+  },
+  "ML (matriz)": {
+   "Moderado": 122,
+   "Crítico": 40,
+   "Elevado": 51,
+   "Baixo": 80
+  },
+  "observado": {
+   "Baixo": 119,
+   "Moderado": 154,
+   "Elevado": 16,
+   "Crítico": 4
+  }
+ },
+ "criterios": [
+  {
+   "criterio": "Ex-ante (Res. 781) — Elevado/Crítico",
+   "alertas": 0,
+   "acertos": 0,
+   "precisao": null,
+   "recall": 0.0,
+   "lift": null
+  },
+  {
+   "criterio": "Ex-ante (Res. 781) — Moderado ou acima",
+   "alertas": 158,
+   "acertos": 32,
+   "precisao": 0.2025,
+   "recall": 0.5161,
+   "lift": 0.96
+  },
+  {
+   "criterio": "Matriz ML — Elevado/Crítico",
+   "alertas": 91,
+   "acertos": 29,
+   "precisao": 0.3187,
+   "recall": 0.4677,
+   "lift": 1.51
+  },
+  {
+   "criterio": "Matriz ML — só Crítico",
+   "alertas": 40,
+   "acertos": 18,
+   "precisao": 0.45,
+   "recall": 0.2903,
+   "lift": 2.13
+  },
+  {
+   "criterio": "ML ≥ 20%",
+   "alertas": 82,
+   "acertos": 45,
+   "precisao": 0.5488,
+   "recall": 0.7258,
+   "lift": 2.59
+  },
+  {
+   "criterio": "ML ≥ 10%",
+   "alertas": 128,
+   "acertos": 51,
+   "precisao": 0.3984,
+   "recall": 0.8226,
+   "lift": 1.88
+  },
+  {
+   "criterio": "ML ≥ 5%",
+   "alertas": 184,
+   "acertos": 56,
+   "precisao": 0.3043,
+   "recall": 0.9032,
+   "lift": 1.44
+  },
+  {
+   "criterio": "Ex-ante top-50 (risco inerente + pontos)",
+   "alertas": 50,
+   "acertos": 9,
+   "precisao": 0.18,
+   "recall": 0.1452,
+   "lift": 0.85
+  },
+  {
+   "criterio": "ML top-50 (probabilidade)",
+   "alertas": 50,
+   "acertos": 27,
+   "precisao": 0.54,
+   "recall": 0.4355,
+   "lift": 2.55
+  },
+  {
+   "criterio": "Ex-ante top-100 (risco inerente + pontos)",
+   "alertas": 100,
+   "acertos": 19,
+   "precisao": 0.19,
+   "recall": 0.3065,
+   "lift": 0.9
+  },
+  {
+   "criterio": "ML top-100 (probabilidade)",
+   "alertas": 100,
+   "acertos": 49,
+   "precisao": 0.49,
+   "recall": 0.7903,
+   "lift": 2.32
+  },
+  {
+   "criterio": "(referência, circular) Observado — Elevado/Crítico",
+   "alertas": 20,
+   "acertos": 17,
+   "precisao": 0.85,
+   "recall": 0.2742,
+   "lift": 4.02
+  }
+ ],
+ "contrato_010294_2023": {
+  "ex_ante": [
+   "Moderado",
+   20
+  ],
+  "observado": [
+   "Crítico",
+   100
+  ],
+  "ml_prob": 0.045,
+  "ml_matriz": "Moderado"
+ },
+ "sancoes": {
+  "sancoes_consulta": "2026-11-18",
+  "fornecedores_verificados": 232,
+  "fornecedores_com_registro": 19,
+  "contratos_sancao_na_assinatura": 0
+ }
+}

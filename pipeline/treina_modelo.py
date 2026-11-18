@@ -35,6 +35,8 @@ from sklearn.model_selection import cross_val_predict
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+import escala_781 as E
+
 BASE = Path(__file__).resolve().parent.parent
 PROC = BASE / "dados" / "processados"
 rng = np.random.RandomState(42)
@@ -120,9 +122,11 @@ heur_score = np.array([heuristica(r) for r in rows])
 val_treino = np.array([num(r, "valor_global") for r in rows])[tr]
 quintis = np.nanpercentile(val_treino, [20, 40, 60, 80])
 imp_i = 1 + np.searchsorted(quintis, [num(r, "valor_global") for r in rows])
-prob_i = np.clip(np.round(heur_score), 1, 5)
-heur_alto = ((prob_i * imp_i) > 9).astype(int)   # Elevado ou Crítico
-heur_prob = (prob_i * imp_i) / 25                # p/ PR-AUC do baseline
+prob_i = np.clip(np.round(heur_score), 1, 5).astype(int)
+# régua oficial da Res. 781/2022: valores 1-2-5-8-10, risco inerente 0–100
+heur_pont = np.array([E.pontuacao(int(p), int(i)) for p, i in zip(prob_i, imp_i)])
+heur_alto = (heur_pont >= 40).astype(int)        # Elevado ou Crítico
+heur_prob = heur_pont / 100                      # p/ PR-AUC do baseline
 
 # ------------------------------------------------------------------ avaliação
 res = {}
@@ -148,7 +152,7 @@ for nome, mdl in modelos.items():
 prh, rch, f1h, _ = precision_recall_fscore_support(
     y[te], heur_alto[te], average="binary", zero_division=0)
 res["Baseline heurístico (Res. 781)"] = {
-    "limiar": "nível > Moderado",
+    "limiar": "Elevado ou Crítico (risco inerente ≥ 40, Res. 781)",
     "precision": round(prh, 3), "recall": round(rch, 3), "f1": round(f1h, 3),
     "pr_auc": round(average_precision_score(y[te], heur_prob[te]), 3),
     "roc_auc": round(roc_auc_score(y[te], heur_prob[te]), 3),

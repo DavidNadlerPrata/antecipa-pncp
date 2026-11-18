@@ -14,7 +14,7 @@ Contratos de 2026 excluídos da avaliação (rótulo imaturo/censurado).
 |---|---|---|---|---|---|---|
 | Regressão Logística | 0.049 | 0.35 | 0.086 | 0.04 | 0.746 | 998 |
 | Gradient Boosting | 0.064 | 0.393 | 0.111 | 0.071 | 0.798 | 853 |
-| Baseline heurístico (Res. 781) | 0.067 | 0.129 | 0.088 | 0.033 | 0.705 | 267 |
+| Baseline heurístico (Res. 781) | 0.032 | 0.036 | 0.034 | 0.031 | 0.701 | 154 |
 
 Prevalência no teste (classificador aleatório teria PR-AUC ≈): 0.016.
 Limiar de decisão escolhido no treino (máximo F1 em validação cruzada 5-fold).

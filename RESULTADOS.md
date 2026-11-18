@@ -5,8 +5,20 @@ avaliação, resultados dos modelos e achados de engenharia de dados. Os relató
 detalhados de cada experimento estão em `dados/processados/`. Visão geral do
 pipeline e instruções de execução: [README.md](README.md).
 
-Todos os dados são públicos (PNCP, compras.gov.br, dados abertos do CNPJ). Este é
-um protótipo acadêmico; os escores não constituem juízo sobre nenhuma empresa.
+Todos os dados são públicos (PNCP, compras.gov.br, dados abertos do CNPJ, Portal
+da Transparência). Este é um protótipo acadêmico; os escores não constituem juízo
+sobre nenhuma empresa.
+
+> **Correções desta versão (18/11/2026).** (1) **Escala oficial da Res. STF
+> 781/2022 adotada**, a partir dos anexos da norma: níveis 1·2·5·8·10 e risco
+> inerente de 0 a 100. A versão anterior usava uma escala 1–5 linear com faixas
+> próprias, que divergia da norma. (2) **Carteira do STF deduplicada**: os 365
+> registros publicados no PNCP correspondem a 293 contratos únicos; os números da
+> carteira divulgados antes contavam cópias. (3) **Sanções CEIS/CNEP integradas**
+> via API oficial do Portal da Transparência. As correções (1) e (2) alteram a
+> seção 5.4; os resultados formais do modelo (5.1–5.3) não mudam, pois usavam o
+> dataset multi-órgão, já deduplicado. A escala oficial está centralizada em
+> [`pipeline/escala_781.py`](pipeline/escala_781.py).
 
 ---
 
@@ -18,11 +30,13 @@ um protótipo acadêmico; os escores não constituem juízo sobre nenhuma empres
 | API do PNCP — termos | Aditivos, apostilamentos e rescisões, com data e valores | base do rótulo |
 | API de busca do PNCP | Presença nacional dos maiores fornecedores do STF | top-15 da carteira |
 | Dados abertos do CNPJ (Receita Federal) | Capital social, porte, idade, CNAE, situação cadastral | 9.598 de 9.600 fornecedores |
+| Portal da Transparência — CEIS e CNEP | Sanções de empresas (inidoneidade, impedimento, suspensão, Lei Anticorrupção) | 232 fornecedores do STF |
 | Pesquisa de preços do compras.gov.br | Distribuição nacional de preços homologados por item | 7 itens |
 
 Recorte temporal: vigência plena da Lei 14.133/2021 (2023 em diante). Na carteira
-do STF: 365 registros de contrato (R$ 1,195 bilhão), 237 termos aditivos, 22
-rescisões/extinções.
+do STF: **293 contratos únicos** (365 registros no PNCP), R$ 996 milhões, 179
+termos aditivos, 16 rescisões/extinções, 62 contratos com desfecho adverso
+(21,2 %).
 
 ## 2. Rotulagem pelo desfecho real
 
@@ -40,6 +54,14 @@ coorte de assinatura: **1,5 % (2023) · 1,7 % (2024) · 2,1 % (2025)**.
 
 ## 3. As três leituras de risco
 
+**Escala oficial da Res. STF 781/2022.** Probabilidade e impacto têm cinco níveis
+com valores **1 · 2 · 5 · 8 · 10** (Muito baixa/o, Baixa/o, Média/o, Alta/o, Muito
+alta/o). O **risco inerente** é o produto dos dois, de 0 a 100, classificado em
+**Baixo** (0–9,9) · **Moderado** (10–39,9) · **Elevado** (40–79,9) · **Crítico**
+(80–100). A norma define ainda o **risco residual** = inerente × fator de eficácia
+dos controles (1,0 · 0,8 · 0,6 · 0,4 · 0,2); como dados públicos não informam os
+controles internos, o ANTECIPA calcula apenas o risco inerente.
+
 Cada contrato é apresentado sob três leituras, que respondem a perguntas
 diferentes. Duas são *ex-ante*; uma é retrospectiva.
 
@@ -47,34 +69,39 @@ diferentes. Duas são *ex-ante*; uma é retrospectiva.
 soma apenas fatores conhecidos na assinatura: capital social < 2 % do volume
 contratado nacional `+1,2` (> 30 % `−0,5`; não informado `+0,3`); CNPJ < 3 anos
 `+0,8` (> 10 anos `−0,4`); crescimento contratual atípico ≥ 3× a mediana no PNCP
-`+1,0`; situação cadastral ≠ "Ativa" `+1,5`; vigência > 12 meses `+0,4`. Total
-arredondado e limitado a 1–5.
+`+1,0`; situação cadastral ≠ "Ativa" `+1,5`; vigência > 12 meses `+0,4`; **sanção
+CEIS/CNEP em vigor e já publicada na data da assinatura `+2,0`**. O total,
+arredondado e limitado a 1–5, indica o nível de probabilidade da norma.
 
 **(b) Probabilidade prevista — modelo supervisionado.** Gradient Boosting com
 calibração isotônica (5 folds). Treino: 16.783 contratos de 11 órgãos
 (2022–2025). Variáveis: apenas as disponíveis na assinatura. Na matriz, a
-probabilidade vira escala 1–5 por faixas fixas (1: < 2 % · 2: 2–5 % · 3: 5–10 % ·
-4: 10–20 % · 5: ≥ 20 %), ancoradas na taxa base e não em quantis.
+probabilidade vira nível da norma por faixas fixas — Muito baixa (1) < 2 % ·
+Baixa (2) 2–5 % · Média (5) 5–10 % · Alta (8) 10–20 % · Muito alta (10) ≥ 20 % —
+ancoradas na taxa base, não em quantis. A correspondência com os descritores
+qualitativos é provisória: ≥ 20 % é mais de 11× a taxa base, mas está longe de
+"praticamente certa".
 
 **(c) Nível observado — Res. 781/2022.** O mesmo escore de (a) acrescido do que já
 ocorreu: ≥ 2 aditivos `+0,8`; valor acumulado > 10 % acima do inicial `+0,8`;
 rescisão/extinção registrada `+1,5`. Leitura retrospectiva — parte do que ela mede
 já é o problema materializado.
 
-Em (a) e (c), o eixo de **impacto** (1–5) é o quintil do valor global na carteira,
-e o **nível** vem do produto probabilidade × impacto: ≤ 4 Baixo · ≤ 9 Moderado ·
-≤ 16 Elevado · > 16 Crítico.
+Nas três leituras, o **impacto** é o quintil do valor global do contrato na
+carteira (Muito baixo → Muito alto) — eixo comum que as torna comparáveis.
 
-> **Ressalva:** o escore ex-ante é uma reconstrução feita no presente — usa os
-> dados cadastrais atuais da Receita, que podem ter mudado desde a assinatura. A
-> versão rigorosa exigiria séries históricas, indisponíveis na base aberta.
+> **Ressalvas:** a norma traz descritores qualitativos ("Rara", "Provável"…), não
+> regras de conversão — a tabela de pontos de (a) e (c) é operacionalização própria,
+> em validação com os gestores de risco do STF (seção 8); e o escore ex-ante é uma
+> reconstrução feita no presente, com os dados cadastrais atuais da Receita.
 
 ## 4. Protocolo de avaliação
 
 Validação **temporal** (treino ≤ 2024, teste 2025), métricas próprias de classe
 rara — precision, recall e F1 da classe positiva, PR-AUC e ROC-AUC; **nunca
 acurácia**. O limiar de decisão é escolhido no treino (máximo F1 em validação
-cruzada), jamais no teste. O baseline heurístico é avaliado nas mesmas condições.
+cruzada), jamais no teste. O baseline heurístico é avaliado nas mesmas condições,
+com alerta = Elevado ou Crítico na escala oficial (risco inerente ≥ 40).
 
 ## 5. Resultados
 
@@ -85,11 +112,12 @@ cruzada), jamais no teste. O baseline heurístico é avaliado nas mesmas condiç
 | **Gradient Boosting v2 (12 meses)** | 0,109 | 0,494 | 0,179 | **0,139** (lift 6,6×) | 0,806 |
 | Regressão Logística v2 | 0,052 | 0,647 | 0,096 | 0,065 | 0,755 |
 | Gradient Boosting v1 | 0,064 | 0,393 | 0,111 | 0,071 (lift 4,4×) | 0,798 |
-| Baseline heurístico (Res. 781) | 0,067 | 0,129 | 0,088 | 0,033 (lift 2×) | 0,705 |
+| Baseline heurístico (Res. 781, escala oficial) | 0,032 | 0,036 | 0,034 | 0,031 (lift ~1,9×) | 0,701 |
 
-Visão operacional: entre os 100 contratos de 2025 com maior escore v2, **16
-tiveram desfecho adverso real** em 12 meses — 7,6× a taxa base — capturando 19 %
-de todos os adversos do ano.
+Na escala oficial o baseline emite 154 alertas no teste de 2025 e acerta 5 dos
+140 desfechos adversos. Visão operacional do modelo: entre os 100 contratos de 2025
+com maior escore v2, **16 tiveram desfecho adverso real** em 12 meses — 7,6× a
+taxa base — capturando 19 % de todos os adversos do ano.
 
 Detalhes: [`relatorio_modelo.md`](dados/processados/relatorio_modelo.md) (v1),
 [`relatorio_modelo_v2.md`](dados/processados/relatorio_modelo_v2.md) (v2).
@@ -99,7 +127,8 @@ Detalhes: [`relatorio_modelo.md`](dados/processados/relatorio_modelo.md) (v1),
 Mesmo teste (contratos do STF assinados em 2025: 106 contratos, 13 adversos). O
 modelo só-STF (148 contratos de treino) obteve PR-AUC 0,384; o multi-órgão
 (12.483 contratos), 0,319. **Bootstrap com 4.000 reamostras: Δ = +0,069, IC 95 %
-[−0,221; +0,350]** — diferença não conclusiva.
+[−0,221; +0,350]** — diferença não conclusiva. No mesmo teste, o baseline na
+escala oficial emite 2 alertas e não acerta nenhum.
 
 Leitura equilibrada: o padrão local do STF carrega sinal específico relevante (sua
 carteira tem prevalência de desfecho adverso muito superior à dos demais órgãos),
@@ -131,33 +160,69 @@ interpretável sem alterar a capacidade de discriminar.
 
 Reproduzir: `python pipeline/diagrama_calibracao.py`.
 
-### 5.4 A matriz ex-ante não discrimina na carteira do STF
+### 5.4 Na escala oficial, a matriz ex-ante não emite alerta na carteira do STF
 
-Aplicando os critérios de alerta aos 365 contratos do STF (taxa base de desfecho
-adverso: **22,7 %**):
+Critérios de alerta aplicados aos 293 contratos do STF (taxa base de desfecho
+adverso: **21,2 %**):
 
 | Critério de alerta | Alertas | Acertos | Precisão | Recall | Lift |
 |---|---|---|---|---|---|
-| **Ex-ante (Res. 781, Elevado/Crítico)** | 52 | 12 | **23,1 %** | 14,5 % | **1,01×** |
-| ML ≥ 20 % | 100 | 57 | 57,0 % | 68,7 % | 2,51× |
-| ML ≥ 10 % | 159 | 65 | 40,9 % | 78,3 % | 1,80× |
-| ML ≥ 5 % | 232 | 74 | 31,9 % | 89,2 % | 1,40× |
-| **ML top-52** (mesmo volume do ex-ante) | 52 | 30 | **57,7 %** | 36,1 % | 2,54× |
-| *(referência)* Observado, Elevado/Crítico | 66 | 22 | 33,3 % | 26,5 % | 1,47× |
+| **Ex-ante (Res. 781) — Elevado/Crítico** | **0** | 0 | — | 0,0 % | — |
+| Ex-ante (Res. 781) — Moderado ou acima | 158 | 32 | 20,2 % | 51,6 % | 0,96× |
+| Ex-ante top-50 (ordenado pelo escore) | 50 | 9 | 18,0 % | 14,5 % | 0,85× |
+| **ML top-50 (probabilidade)** | 50 | 27 | **54,0 %** | 43,5 % | **2,55×** |
+| Ex-ante top-100 | 100 | 19 | 19,0 % | 30,6 % | 0,90× |
+| ML top-100 | 100 | 49 | 49,0 % | 79,0 % | 2,32× |
+| ML ≥ 20 % | 82 | 45 | 54,9 % | 72,6 % | 2,59× |
+| ML ≥ 10 % | 128 | 51 | 39,8 % | 82,3 % | 1,88× |
+| ML ≥ 5 % | 184 | 56 | 30,4 % | 90,3 % | 1,44× |
+| *(referência, circular)* Observado — Elevado/Crítico | 20 | 17 | 85,0 % | 27,4 % | 4,02× |
 
-A heurística ex-ante tem precisão de 23,1 % contra taxa base de 22,7 % — **lift
-1,01×, ou seja, não discrimina**. Sortear 52 contratos ao acaso acertaria
-praticamente o mesmo (esperado ~11,8; obtido 12). No mesmo custo operacional, o
-modelo identifica **30 contratos problemáticos contra 12**.
+**Na escala oficial, a leitura ex-ante não classifica nenhum contrato como Elevado
+ou Crítico.** Com os fatores disponíveis antes da assinatura, a probabilidade
+ex-ante de todos os 293 contratos fica em Muito baixa (1) ou Baixa (2); mesmo com
+impacto máximo (10), o risco inerente chega no máximo a 20 — Moderado. Na matriz
+do painel, todos os contratos ocupam apenas as duas primeiras colunas. Relaxando o
+critério para "Moderado ou acima", a precisão (20,2 %) fica **abaixo da taxa
+base** (lift 0,96×); ordenando pelo escore contínuo, os 50 primeiros contêm 9
+desfechos adversos — enquanto os 50 primeiros do modelo contêm **27, três vezes
+mais**.
 
-Três ressalvas: (i) os números do ML aqui são **otimistas** — contratos do STF
+Ressalvas: (i) os números do ML aqui são **otimistas** — contratos do STF
 integraram o treino; a medição fora da amostra é a da seção 5.1; (ii) o rótulo
 aqui é o mais frouxo ("adverso a qualquer momento"), então **lift** é a coluna
-comparável entre contextos, não a precisão absoluta; (iii) a heurística falha
-justamente no STF porque a carteira é homogeneamente de alto risco pelos critérios
-da norma — quase tudo é serviço continuado, longo e de valor elevado, saturando as
-variáveis discriminantes. Numa base multi-órgão heterogênea ela ainda apresentava
-sinal (lift ~4×).
+comparável entre contextos; (iii) o "zero alertas" resulta da escala oficial
+**combinada com a nossa tabela de pontos** — se a validação com o STF elevar os
+pesos, o número muda; (iv) a carteira do STF é homogeneamente de alto risco pelos
+critérios da norma (serviço continuado, longo, de valor elevado), o que satura as
+variáveis discriminantes; (v) a leitura observada tem precisão alta justamente por
+ser circular — usa o desfecho que pretende sinalizar.
+
+Reproduzir: `python pipeline/metricas_carteira_stf.py` →
+[`metricas_carteira_stf.md`](dados/processados/metricas_carteira_stf.md).
+
+**Probabilidade pura × matriz — réguas para perguntas diferentes.** A matriz do
+ML (probabilidade convertida em nível da norma × impacto) e o ranqueamento pela
+probabilidade pura otimizam objetivos distintos:
+
+| Critério | Alertas | Acertos | Precisão | Recall | Lift |
+|---|---|---|---|---|---|
+| Matriz ML — Elevado/Crítico | 91 | 29 | 31,9 % | 46,8 % | 1,51× |
+| Matriz ML — só Crítico | 40 | 18 | 45,0 % | 29,0 % | 2,13× |
+| ML ≥ 20 % (prob. pura, volume ~igual) | 82 | 45 | 54,9 % | 72,6 % | 2,59× |
+| ML top-50 (prob. pura) | 50 | 27 | 54,0 % | 43,5 % | 2,55× |
+
+Em volume semelhante (91 e 82 alertas), a probabilidade pura é mais precisa que a
+matriz (54,9 % contra 31,9 %): multiplicar pelo impacto dilui o sinal preditivo,
+porque o eixo de impacto — o quantil do valor — mede a **consequência** de um
+problema, não a sua **probabilidade**. Não é defeito: a matriz otimiza **perda
+esperada**, não taxa de acerto. Um contrato com 10 % de chance de problema em
+R$ 500 milhões merece mais atenção que um com 25 % em R$ 50 mil, e é isso que a
+ponderação por impacto captura, ao custo de errar mais em quantidade. **Use a
+régua conforme a pergunta:** para "quais contratos vão dar problema?", ordene pela
+probabilidade pura; para "onde alocar a diligência considerando o estrago
+potencial?", use a matriz. Avaliar a matriz por precisão sobre o desfecho mede-a
+por um objetivo que não é o dela — daí a coexistência das três leituras no painel.
 
 ### 5.5 Escolha da técnica de explicação: SHAP × modelo substituto
 
@@ -219,6 +284,34 @@ a combinação anterior: modelo de árvores explicado por modelo linear distinto
 Detalhes: [`comparacao_explicacoes.md`](dados/processados/comparacao_explicacoes.md).
 Reproduzir: `python pipeline/compara_explicacoes.py`.
 
+### 5.6 Sanções CEIS/CNEP dos fornecedores do STF
+
+Os 232 fornecedores PJ da carteira foram consultados no CEIS e no CNEP pela API
+oficial do Portal da Transparência (18/11/2026). **19 (8,2 %) têm registro — todos
+no CEIS, nenhum no CNEP.** Um único fornecedor concentra quase 30 sanções,
+incluindo declaração de inidoneidade pelo TCU e duas sanções aplicadas pelo
+próprio STF.
+
+- **Fator ex-ante (`+2,0`): disparou em 0 contratos.** Nenhum fornecedor tinha
+  sanção em vigor e já publicada na data da assinatura. Todas as 66 combinações
+  contrato–sanção referem-se a sanções iniciadas **depois** da assinatura. É o
+  resultado esperado: a Lei 14.133/2021 (art. 91, § 4º) obriga a consultar CEIS e
+  CNEP antes de formalizar o contrato — o controle prévio funciona.
+- **23 contratos** têm fornecedor sancionado posteriormente (8 dessas combinações
+  por sanção do próprio STF). O painel exibe essa informação no detalhamento de
+  cada contrato, fora do escore ex-ante.
+- **Verificação exploratória, resultado nulo.** A sanção posterior não se associa
+  ao desfecho do contrato: desfecho adverso de 13,0 % nesses 23 contratos contra
+  21,9 % nos demais (Fisher, p = 0,43); probabilidade mediana do modelo de 9,9 %
+  contra 7,5 % (Mann-Whitney unilateral, p = 0,12). Com n = 23 o teste tem pouco
+  poder, e as sanções refletem condutas com outros órgãos, enquanto o rótulo mede
+  aditivos e prorrogações deste contrato. Não há, portanto, validação externa do
+  modelo por essa via.
+
+A chave da API é pessoal e **não** integra o repositório: `coleta_sancoes.py` a lê
+de `PORTAL_TRANSPARENCIA_CHAVE` ou de `~/.antecipa/portal_transparencia.key`; sem
+ela, o pipeline usa o cache versionado em `dados/brutos/sancoes_stf.json`.
+
 ## 6. Achados de engenharia de dados
 
 1. **O STF não preenche `catalogoCodigoItem`** (CATMAT/CATSER) nos itens que
@@ -226,8 +319,10 @@ Reproduzir: `python pipeline/compara_explicacoes.py`.
    preços exigiu reconstruir a ponte descrição → PDM → códigos via catálogo do
    compras.gov.br.
 2. **As listas paginadas do PNCP contêm duplicatas** (republicações/retificações):
-   o TST retorna 13.765 registros para 9.407 contratos únicos. Deduplicação por
-   `numeroControlePncp` é obrigatória em qualquer uso analítico.
+   o TST retorna 13.765 registros para 9.407 contratos únicos, e o próprio STF, 365
+   registros para 293 contratos. Deduplicação por `numeroControlePncp` é
+   obrigatória em qualquer uso analítico — inclusive no painel, que até a versão
+   anterior somava as cópias.
 3. **CNPJs raiz agregam unidades**: TST e TSE trazem as unidades regionais da
    Justiça do Trabalho e Eleitoral — útil para volume, exige atenção ao
    interpretar "órgão".
@@ -238,6 +333,10 @@ Reproduzir: `python pipeline/compara_explicacoes.py`.
    dado não informado, não "empresa sem lastro"; o escore trata o caso à parte.
 6. **A API do PNCP aplica rate-limit** (HTTP 429) em coletas longas; o pipeline usa
    retry com backoff e um passe de reparo (`repara_multi.py`).
+7. **API do Portal da Transparência**: exige chave pessoal no cabeçalho
+   `chave-api-dados`; filtro por CNPJ em `codigoSancionado`; páginas de 15
+   registros; limite de ~90 requisições/minuto em horário diurno. As datas vêm no
+   formato `dd/mm/aaaa` e o fim da sanção pode ser indeterminado.
 
 ## 7. Limitações
 
@@ -251,6 +350,9 @@ Reproduzir: `python pipeline/compara_explicacoes.py`.
   temporal; em produção, contar apenas contratos anteriores à assinatura.
 - A precisão absoluta dos alertas é baixa (classe rara): o uso correto é
   ranqueamento com fila por capacidade de diligência, com decisão sempre humana.
+- **O painel calcula só o risco inerente.** O risco residual da norma depende da
+  avaliação da eficácia dos controles internos de cada unidade, que não é dado
+  público.
 - **As explicações SHAP não decompõem exatamente a porcentagem exibida.** Elas
   descrevem o Gradient Boosting ajustado sobre toda a base, enquanto a
   probabilidade provém do mesmo algoritmo calibrado em 5 partições — concordância
@@ -260,20 +362,25 @@ Reproduzir: `python pipeline/compara_explicacoes.py`.
   dados de ajuste do modelo.
 - Comparações de preço por PDM agregam especificações heterogêneas: desvios
   disparam diligência, nunca conclusão de sobrepreço.
-- Sanções (CEIS/CNEP, SICAF, CNDT) não integram o modelo — dependem de
-  credenciamento institucional.
+- Sanções CEIS/CNEP foram consultadas só para os fornecedores do STF e entram no
+  escore heurístico, não no modelo supervisionado. SICAF e CNDT seguem fora — não
+  há API pública.
 - Pequenas lacunas de coleta permanecem onde o rate-limit persistiu (TRF5/2026 e
   páginas profundas de TST/TSE 2023).
 
 ## 8. Nota sobre a operacionalização da Res. 781/2022
 
-A Resolução fornece a moldura (escalas 1–5 de probabilidade e impacto,
-classificação pelo produto), mas **não fornece uma tabela que converta dados
-observáveis em pontos**. A tabela de pesos usada no baseline (seção 3a) é uma
-operacionalização proposta neste trabalho — plausível, porém arbitrária, e não
-verificada contra o texto integral da norma. Recomenda-se validá-la com os
-gestores de risco do órgão antes de qualquer uso institucional.
+Os anexos da Resolução (escalas de probabilidade, de impacto, de nível de risco e
+de eficácia dos controles) foram incorporados nesta versão, e a escala oficial
+substituiu a régua linear 1–5 usada antes. Eles confirmam, porém, que a norma
+traz apenas **descritores qualitativos** — "Rara", "Improvável", "Possível",
+"Provável", "Praticamente certa"; impacto "Insignificante" a "Catastrófico" — e
+**não define como converter dados observáveis em níveis**. A tabela de pontos da
+seção 3 é, portanto, operacionalização proposta neste trabalho, em **validação
+com os gestores de risco do STF**. O mesmo vale para a correspondência entre as
+faixas de probabilidade do modelo e os descritores da norma.
 
 Importante: o resultado central (modelo supervisionado) **não depende dessa
 tabela** — o rótulo vem do desfecho real, justamente para escapar da
-circularidade.
+circularidade. O que depende dela é a leitura ex-ante e, portanto, o achado da
+seção 5.4.

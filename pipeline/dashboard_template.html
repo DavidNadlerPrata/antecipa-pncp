@@ -127,6 +127,7 @@ svg text{font-family:inherit}
 .hm{display:grid;gap:2px;margin-top:6px}
 .hm-cell{border-radius:4px;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;position:relative;cursor:default}
 .hm-lab{font-size:10.5px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.hm-score{position:absolute;top:3px;left:5px;font-size:9.5px;font-weight:500;color:var(--ink-2);opacity:.7}
 .small{font-size:12px;color:var(--muted)}
 .tbl-toggle{background:none;border:none;color:var(--seq-550);font-size:12px;cursor:pointer;text-decoration:underline;padding:0}
 :root[data-theme="dark"] .tbl-toggle{color:var(--seq-250)}
@@ -226,7 +227,8 @@ homologados por todos os órgãos federais (API de pesquisa de preços do compra
 <!-- =============== MÓDULO 2 =============== -->
 <h2 class="mod"><span class="mnum">MÓDULO 2</span> Raio-X do Fornecedor</h2>
 <p class="moddesc">Perfil real dos principais fornecedores do STF: dados cadastrais abertos da Receita Federal
-(capital social, porte, idade, CNAE) e presença nacional no PNCP (contratos com todos os órgãos).</p>
+(capital social, porte, idade, CNAE), presença nacional no PNCP (contratos com todos os órgãos) e
+sanções nos cadastros CEIS e CNEP, consultados pela API oficial do Portal da Transparência.</p>
 
 <div class="card" style="margin-bottom:6px">
   <label>
@@ -238,7 +240,7 @@ homologados por todos os órgãos federais (API de pesquisa de preços do compra
   <div class="card" id="supplierCard"></div>
   <div class="card">
     <h3 class="ct">Verificações de idoneidade</h3>
-    <p class="csub">O que já é real nesta versão e o que depende de credenciamento institucional</p>
+    <p class="csub">Consultas reais a bases oficiais — e o que ainda depende de credenciamento institucional</p>
     <div id="sanList"></div>
   </div>
 </div>
@@ -294,8 +296,10 @@ casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que 
           <li>crescimento contratual atípico (≥ 3× a mediana histórica no PNCP): <b>+1,0</b></li>
           <li>situação cadastral na Receita diferente de “Ativa”: <b>+1,5</b></li>
           <li>vigência prevista superior a 12 meses: <b>+0,4</b></li>
+          <li>sanção CEIS/CNEP em vigor <em>e já publicada</em> na data da assinatura: <b>+2,0</b></li>
         </ul>
-        <p>O total é arredondado e limitado ao intervalo 1–5.</p>
+        <p>O total é arredondado e limitado a 1–5, que indica o nível da norma: Muito baixa (1) ·
+          Baixa (2) · Média (5) · Alta (8) · Muito alta (10).</p>
       </div>
       <div>
         <h4>2 · Previsão ML (na assinatura)</h4>
@@ -309,8 +313,10 @@ casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que 
           <li><b>Variáveis:</b> apenas as disponíveis na assinatura — valor, duração, categoria, órgão,
             capital social, idade e porte do fornecedor, situação cadastral, razão capital/valor e
             recorrência no PNCP.</li>
-          <li><b>Na matriz</b>, a probabilidade vira escala 1–5 por faixas fixas: 1 &lt;2% · 2 = 2–5% ·
-            3 = 5–10% · 4 = 10–20% · 5 ≥ 20%.</li>
+          <li><b>Na matriz</b>, a probabilidade vira nível da norma por faixas fixas: Muito baixa (1)
+            &lt;2% · Baixa (2) 2–5% · Média (5) 5–10% · Alta (8) 10–20% · Muito alta (10) ≥20%. A
+            correspondência é provisória: ≥20% é mais de 11× a taxa base, mas está longe do descritor
+            “praticamente certa”.</li>
         </ul>
         <p>A explicação por contrato usa <strong>valores SHAP</strong> (TreeExplainer) calculados sobre o
           <em>próprio</em> Gradient Boosting — o modelo que gera a probabilidade —, em escala de log-odds.
@@ -331,12 +337,17 @@ casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que 
           problema materializado, e não uma previsão.</p>
       </div>
     </div>
-    <p class="metodo-comum"><strong>Comum às leituras 1 e 3 —</strong> o eixo de <strong>impacto</strong>
-      (1–5) é o quintil do valor global do contrato dentro da carteira do STF, e o <strong>nível</strong>
-      resulta do produto probabilidade × impacto nas faixas da norma: ≤ 4 Baixo · ≤ 9 Moderado ·
-      ≤ 16 Elevado · &gt; 16 Crítico. As três leituras compartilham o mesmo eixo de impacto, o que as torna
-      diretamente comparáveis. <strong>Ressalva:</strong> o escore ex-ante é uma reconstrução feita hoje —
-      usa os dados cadastrais atuais da Receita, que podem ter mudado desde a assinatura.</p>
+    <p class="metodo-comum"><strong>Escala oficial da Res. 781/2022 —</strong> probabilidade e impacto
+      têm cinco níveis com valores <strong>1 · 2 · 5 · 8 · 10</strong>; o <strong>risco inerente</strong> é o
+      produto dos dois (0 a 100), classificado em <strong>Baixo</strong> (0–9,9) · <strong>Moderado</strong>
+      (10–39,9) · <strong>Elevado</strong> (40–79,9) · <strong>Crítico</strong> (80–100). O impacto é o
+      quintil do valor global do contrato na carteira do STF (Muito baixo → Muito alto), comum às três
+      leituras, o que as torna diretamente comparáveis. A norma define ainda o <em>risco residual</em> =
+      inerente × fator de eficácia dos controles (1,0 a 0,2); como dados públicos não informam os controles
+      internos, o painel mostra apenas o <strong>risco inerente</strong>.
+      <strong>Ressalvas:</strong> a norma traz descritores qualitativos (“Rara”, “Provável”…), não regras de
+      conversão — a tabela de pontos acima é operacionalização própria, em validação com o STF; e o escore
+      ex-ante é uma reconstrução feita hoje, com dados cadastrais atuais da Receita.</p>
   </details>
 
   <div class="gov" id="govRow" style="display:none">
@@ -351,8 +362,9 @@ casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que 
   <div class="card">
     <h3 class="ct">Matriz de Riscos — Probabilidade prevista na assinatura (ML)</h3>
     <p class="csub">Leitura <strong>preventiva</strong>: probabilidade calibrada do modelo convertida
-      para a escala 1–5 (1: &lt;2% · 2: 2–5% · 3: 5–10% · 4: 10–20% · 5: ≥20%), com o mesmo eixo de
-      impacto. É onde os contratos estariam <em>antes</em> de contratar.</p>
+      para os níveis da norma (1: &lt;2% · 2: 2–5% · 5: 5–10% · 8: 10–20% · 10: ≥20%), com o mesmo eixo de
+      impacto. É onde os contratos estariam <em>antes</em> de contratar. Número no canto de cada célula =
+      risco inerente (0–100).</p>
     <div id="matrixML"></div>
     <div class="legend" id="matrixMLLegend"></div>
   </div>
@@ -418,7 +430,18 @@ const ICONS = {
  'Crítico':'<svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
 };
 const badge = n => `<span class="rbadge ${NIVEIS[n].cls}">${ICONS[n]} ${n}</span>`;
-const nivelDe = p => { const s=p.prob*p.imp; return s<=4?'Baixo':s<=9?'Moderado':s<=16?'Elevado':'Crítico'; };
+
+/* Escalas oficiais da Res. STF 781/2022 — espelho de pipeline/escala_781.py.
+   Posição ordinal 1–5 -> valor oficial 1·2·5·8·10; risco inerente = P × I (0–100);
+   faixas: Baixo < 10 · Moderado < 40 · Elevado < 80 · Crítico ≥ 80. */
+const VALOR781 = {1:1, 2:2, 3:5, 4:8, 5:10};
+const PROB781 = {1:'Muito baixa', 2:'Baixa', 3:'Média', 4:'Alta', 5:'Muito alta'};
+const IMP781  = {1:'Muito baixo', 2:'Baixo', 3:'Médio', 4:'Alto', 5:'Muito alto'};
+const pontos781 = (p,i) => VALOR781[p]*VALOR781[i];
+const nivelDaPontuacao = s => s<10?'Baixo':s<40?'Moderado':s<80?'Elevado':'Crítico';
+const nivel781 = (p,i) => nivelDaPontuacao(pontos781(p,i));
+const rotP = p => `${PROB781[p]} (${VALOR781[p]})`;
+const rotI = i => `${IMP781[i]} (${VALOR781[i]})`;
 
 const tip = $('#tip');
 function showTip(html,x,y){
@@ -582,25 +605,67 @@ function renderSupplier(){
     g.addEventListener('pointerleave',hideTip);
   });
   const ativa = (s.situacao||'').toUpperCase()==='ATIVA';
+  // CEIS/CNEP: null = não consultado; [] = consultado, nada consta
+  const dataBR = t => { const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec((t||'').trim()); return m? new Date(+m[3],+m[2]-1,+m[1]) : null; };
+  const dConsulta = s.sancoes_consulta ? new Date(s.sancoes_consulta+'T12:00:00') : null;
+  const fmtConsulta = dConsulta ? dConsulta.toLocaleDateString('pt-BR') : '';
+  const linhaCadastro = cad => {
+    const rot = cad==='CEIS' ? 'CEIS — empresas inidôneas e suspensas' : 'CNEP — empresas punidas (Lei Anticorrupção)';
+    if(!Array.isArray(s.sancoes)) return [rot+' (Portal da Transparência)', 'na', 'Não consultado'];
+    const regs = s.sancoes.filter(x=>x.cadastro===cad);
+    if(!regs.length) return [rot+' (Portal da Transparência)', 'ok', `Nada consta · consulta ${fmtConsulta}`];
+    const vig = regs.filter(x=>{ const ini=dataBR(x.inicio), fim=dataBR(x.fim);
+      return ini && dConsulta && ini<=dConsulta && (!fim || dConsulta<=fim); });
+    return [rot+' (Portal da Transparência)', vig.length?'bad':'ok',
+      vig.length ? `${vig.length} sanção(ões) vigente(s)` : `${regs.length} registro(s) encerrado(s)`];
+  };
   const rows = [
     ['Situação cadastral — Receita Federal (dado real)', ativa?'ok':'bad', ativa?'Ativa':esc(s.situacao||'Verificar')],
     ['Contratos vigentes no PNCP (dado real)', 'ok', `${s.contratos_vigentes} vigentes de ${s.contratos_nacionais} localizados`],
-    ['CEIS/CNEP — sanções (Portal da Transparência)', 'na', 'Próxima etapa — requer chave de API institucional'],
-    ['CNDT — débitos trabalhistas (TST)', 'na', 'Próxima etapa — consulta consolidada TCU'],
-    ['SICAF — impedimentos', 'na', 'Próxima etapa — acesso institucional'],
+    linhaCadastro('CEIS'),
+    linhaCadastro('CNEP'),
+    ['CNDT — débitos trabalhistas (TST)', 'na', 'Pendente — sem API pública; consulta consolidada TCU'],
+    ['SICAF — impedimentos', 'na', 'Pendente — acesso institucional'],
   ];
+  const detalhe = Array.isArray(s.sancoes) && s.sancoes.length
+    ? `<div class="small" style="margin-top:8px">${s.sancoes.map(x=>
+        `<div>· <b>${esc(x.cadastro)}</b> ${esc(x.tipo||'')} — ${esc(x.orgao||'')} · ${esc(x.inicio||'?')} → ${esc(x.fim||'indeterminado')}</div>`).join('')}</div>`
+    : '';
   $('#sanList').innerHTML = rows.map(([n,cls,st])=>`
    <div class="san-row">
      <span class="san-ic san-${cls==='ok'?'ok':cls==='bad'?'bad':'na'}">${cls==='ok'?ICONS['Baixo']:cls==='bad'?ICONS['Crítico']:'…'}</span>
      <span class="san-name">${n}</span>
      <span class="san-st ${cls}">${st}</span>
-   </div>`).join('') +
-   `<div class="notice">Conforme a análise crítica (2.3): produção deve usar APIs oficiais e a consulta
-   consolidada de certidões do TCU — não raspagem. Os itens pendentes exigem credenciamento do órgão.</div>`;
+   </div>`).join('') + detalhe +
+   (DADOS.resumo.fornecedores_verificados ? `<p class="small" style="margin-top:10px"><strong>Na carteira do
+   STF:</strong> ${DADOS.resumo.fornecedores_com_registro} de ${DADOS.resumo.fornecedores_verificados}
+   fornecedores têm registro no CEIS/CNEP; em ${DADOS.resumo.contratos_sancao_na_assinatura} contrato(s) havia
+   sanção vigente e já publicada na data da assinatura. As sanções existentes foram aplicadas depois —
+   veja o detalhamento de cada contrato no Módulo 3.</p>` : '') +
+   `<div class="notice">CEIS e CNEP consultados pela API oficial do Portal da Transparência, sem raspagem
+   (análise crítica, 2.3). Sanção vigente e já publicada na data da assinatura entra como fator ex-ante do
+   Módulo 3. CNDT e SICAF continuam pendentes por exigirem acesso institucional.</div>`;
 }
 
 /* ================= MÓDULO 3 ================= */
-const scoreDe = p => p.prob*p.imp;
+const scoreDe = p => p.score;   // risco inerente oficial (0–100), leitura observada
+
+/* Sanções CEIS/CNEP do fornecedor do contrato, separando o que já era público na
+   assinatura (entra no ex-ante) do que surgiu depois (só informativo aqui). */
+const dataBRp = t => { const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec((t||'').trim()); return m? new Date(+m[3],+m[2]-1,+m[1]) : null; };
+function sancoesDoContrato(p){
+  const R = DADOS.resumo;
+  if(!Array.isArray(p.sancoes)) return '';
+  const consulta = R.sancoes_consulta ? new Date(R.sancoes_consulta+'T12:00:00').toLocaleDateString('pt-BR') : '';
+  if(!p.sancoes.length) return `<p class="small" style="margin-top:4px">Sanções do fornecedor (CEIS/CNEP, consulta ${consulta}): nada consta.</p>`;
+  const ass = p.assinatura ? new Date(p.assinatura+'T12:00:00') : null;
+  const depois = p.sancoes.filter(s=>{ const d=dataBRp(s.publicacao)||dataBRp(s.inicio); return ass && d && d>ass; });
+  const peloSTF = p.sancoes.filter(s=>/SUPREMO TRIBUNAL FEDERAL/i.test(s.orgao||''));
+  return `<div class="notice" style="margin-top:8px"><strong>Fornecedor com ${p.sancoes.length} sanção(ões) no CEIS/CNEP</strong>
+    (consulta ${consulta})${depois.length? ` — ${depois.length} publicada(s) <em>após</em> a assinatura deste contrato,
+    por isso fora do escore ex-ante`:''}${peloSTF.length? `; ${peloSTF.length} aplicada(s) pelo próprio STF`:''}.
+    <div style="margin-top:4px">${p.sancoes.slice(0,4).map(s=>`· ${esc(s.tipo||'')} — ${esc(s.orgao||'')} (${esc(s.inicio||'?')} → ${esc(s.fim||'indeterminado')})`).join('<br>')}${p.sancoes.length>4? `<br>· … e mais ${p.sancoes.length-4}`:''}</div></div>`;
+}
 const TAXA_BASE = 0.018;   // prevalência de desfecho adverso no treino do modelo
 /* célula da coluna "Previsão ML": % calibrada + barra proporcional ao máximo da carteira */
 const MAX_ML = Math.max(...PROCS.map(p=>p?.ml?.prob||0), 0.01);
@@ -643,10 +708,10 @@ function renderShap(){
     $('#shapSub').textContent='Selecione um contrato na tabela acima para ver o detalhamento'; return; }
   $('#shapTitle').innerHTML = `Contrato ${esc(p.id)}`;
   $('#shapSub').innerHTML = `<span style="display:inline-block;margin-right:14px">ex-ante (na assinatura):
-      ${badge(p.nivel_ex)} <span style="color:var(--muted)">prob. ${p.prob_ex}/5</span></span>
-    <span>observado (hoje): ${badge(p.nivel)} <span style="color:var(--muted)">prob. ${p.prob}/5</span></span>
-    <span style="display:block;margin-top:3px">impacto ${p.imp}/5 (comum às duas) · escore heurístico
-    transparente da Res. 781/2022 — não é o modelo de ML</span>`;
+      ${badge(p.nivel_ex)} <span style="color:var(--muted)">${esc(rotP(p.prob_ex))} × ${VALOR781[p.imp]} = <b>${p.score_ex}</b></span></span>
+    <span>observado (hoje): ${badge(p.nivel)} <span style="color:var(--muted)">${esc(rotP(p.prob))} × ${VALOR781[p.imp]} = <b>${p.score}</b></span></span>
+    <span style="display:block;margin-top:3px">impacto ${esc(rotI(p.imp))}, comum às duas · risco inerente
+    0–100 na escala oficial da Res. 781/2022 · escore heurístico transparente — não é o modelo de ML</span>`;
   // fatores ex-ante primeiro, depois os pós-assinatura; dentro de cada grupo, por magnitude
   const fs = p.fatores.filter(f=>f[1]!==null)
     .sort((a,b)=> (b[2]?1:0)-(a[2]?1:0) || Math.abs(b[1])-Math.abs(a[1])).slice(0,7);
@@ -722,7 +787,8 @@ function renderShap(){
      <div><div class="small">Rótulo p/ ML</div><div style="font-weight:600">${dsc.desfecho_adverso? '<span class="rbadge rb-critico">adverso</span>':'<span class="rbadge rb-baixo">regular</span>'}</div></div>
    </div>
    <p class="small" style="margin-top:6px">Vigência ${esc(p.vig_ini||'?')} → ${esc(p.vig_fim||'?')} ·
-     <a href="https://pncp.gov.br/app/contratos?q=${encodeURIComponent(p.pncp)}" target="_blank" rel="noopener" style="color:inherit">ver no PNCP ↗</a></p>`;
+     <a href="https://pncp.gov.br/app/contratos?q=${encodeURIComponent(p.pncp)}" target="_blank" rel="noopener" style="color:inherit">ver no PNCP ↗</a></p>
+   ${sancoesDoContrato(p)}`;
   const dec = state.decisions[p.pncp];
   if(dec){ gov.style.display='none';
     done.innerHTML = `<p class="gov-done ${dec==='ok'?'ok':'fp'}" style="margin-top:12px">
@@ -737,10 +803,13 @@ function decide(kind){
   renderProcs(); renderShap();
 }
 
-/* Faixas que traduzem a probabilidade contínua e calibrada do modelo para a
-   escala ordinal 1–5 da Res. 781/2022. São absolutas (não quantis), ancoradas
-   na taxa base de 1,8%, para que a matriz do ML seja lida na mesma régua da
-   matriz normativa e comparável entre períodos. */
+/* Faixas que traduzem a probabilidade contínua e calibrada do modelo para os
+   cinco níveis de probabilidade da Res. 781/2022 (posições 1–5 = valores
+   1·2·5·8·10). São absolutas (não quantis), ancoradas na taxa base de 1,8%, para
+   que a matriz do ML seja lida na mesma régua da matriz normativa e comparável
+   entre períodos. A correspondência com os descritores da norma ("Rara" ...
+   "Praticamente certa") é provisória: ≥20% já é > 11× a taxa base, mas está
+   longe de "praticamente certa" — ponto a validar com o STF. */
 const FAIXAS_ML = [
   {max:0.02, i:1, rot:'< 2%'},
   {max:0.05, i:2, rot:'2 a 5%'},
@@ -758,20 +827,23 @@ function renderMatrizEm(idMatriz, idLegenda, probFn, opts){
   const cnt = {};
   ps.forEach(p=>{ const k=probFn(p)+'-'+p.imp; (cnt[k]=cnt[k]||[]).push(p); });
   let html = `<div class="small" style="margin-bottom:4px">Impacto ↑</div>`;
-  html += `<div class="hm" style="grid-template-columns:24px repeat(5,1fr)">`;
+  html += `<div class="hm" style="grid-template-columns:30px repeat(5,1fr)">`;
   for(let imp=5; imp>=1; imp--){
-    html += `<div class="hm-lab">${imp}</div>`;
+    html += `<div class="hm-lab" title="${esc(rotI(imp))}">${VALOR781[imp]}</div>`;
     for(let prob=1; prob<=5; prob++){
-      const s=prob*imp;
-      const n = s<=4?'Baixo':s<=9?'Moderado':s<=16?'Elevado':'Crítico';
+      const s = pontos781(prob, imp);
+      const n = nivelDaPontuacao(s);
       const list=cnt[prob+'-'+imp]||[];
       html += `<div class="hm-cell" style="background:${NIVEIS[n].wash}"
-        data-n="${list.length}" data-lv="${n}" data-pi="P${prob} × I${imp}"
+        data-n="${list.length}" data-lv="${n}" data-s="${s}"
+        data-pi="${esc(rotP(prob))} × ${esc(rotI(imp))}"
         data-faixa="${esc(opts.rotuloProb? opts.rotuloProb(prob):'')}">
+        <span class="hm-score">${s}</span>
         ${list.length? `<span>${list.length}</span>`:''}</div>`;
     }
   }
-  html += `<div></div>` + [1,2,3,4,5].map(p=>`<div class="hm-lab">${p}</div>`).join('');
+  html += `<div></div>` + [1,2,3,4,5].map(p=>
+    `<div class="hm-lab" title="${esc(rotP(p))}">${VALOR781[p]}</div>`).join('');
   html += `</div><div class="small" style="text-align:center;margin-top:4px">${esc(opts.eixoX||'Probabilidade →')}</div>`;
   $(idMatriz).innerHTML = html;
   $(idLegenda).innerHTML = Object.entries(NIVEIS).map(([n,v])=>
@@ -781,7 +853,7 @@ function renderMatrizEm(idMatriz, idLegenda, probFn, opts){
     if(!+c.dataset.n) return;
     c.addEventListener('pointermove',e=>showTip(
       `<div class="tv">${c.dataset.n} contrato${c.dataset.n==1?'':'s'}</div>
-       <div class="tl">${c.dataset.pi} · nível ${c.dataset.lv}</div>
+       <div class="tl">${c.dataset.pi} = ${c.dataset.s} · ${c.dataset.lv}</div>
        ${c.dataset.faixa? `<div class="tl">probabilidade ${esc(c.dataset.faixa)}</div>`:''}`,
       e.clientX,e.clientY));
     c.addEventListener('pointerleave',hideTip);
@@ -810,12 +882,14 @@ function renderFullTbl(){
   $('#fullTbl').innerHTML = `<table>
    <thead><tr><th>Contrato PNCP</th><th>Objeto</th><th>Fornecedor</th><th class="num">Valor (R$)</th>
    <th class="num">P ex-ante</th><th class="num">P obs.</th><th class="num">I</th>
+   <th class="num">Risco ex-ante</th><th class="num">Risco obs.</th>
    <th>Nível ex-ante</th><th>Nível observado</th><th class="num">Aditivos</th><th>Desfecho</th></tr></thead>
    <tbody>${ps.map(p=>`<tr>
      <td style="font-variant-numeric:tabular-nums">${esc(p.pncp)}</td>
      <td>${esc(p.obj.slice(0,120))}</td><td>${esc(p.forn_nome||'')}</td>
      <td class="num">${p.valor.toLocaleString('pt-BR')}</td>
-     <td class="num">${p.prob_ex}</td><td class="num">${p.prob}</td><td class="num">${p.imp}</td>
+     <td class="num">${VALOR781[p.prob_ex]}</td><td class="num">${VALOR781[p.prob]}</td><td class="num">${VALOR781[p.imp]}</td>
+     <td class="num">${p.score_ex}</td><td class="num">${p.score}</td>
      <td>${badge(p.nivel_ex)}</td><td>${badge(p.nivel)}</td>
      <td class="num">${p.desfecho.n_aditivos}</td>
      <td>${p.desfecho.desfecho_adverso?'Adverso':'Regular'}</td></tr>`).join('')}

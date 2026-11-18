@@ -1,0 +1,1484 @@
+{
+ "coletado_em": "2026-11-18",
+ "fonte": "Portal da Transparência — CEIS e CNEP",
+ "fornecedores": {
+  "00000000000191": {
+   "ceis": [],
+   "cnep": []
+  },
+  "00000208000100": {
+   "ceis": [],
+   "cnep": []
+  },
+  "00082024000137": {
+   "ceis": [],
+   "cnep": []
+  },
+  "00360305000104": {
+   "ceis": [],
+   "cnep": []
+  },
+  "00456881000150": {
+   "ceis": [],
+   "cnep": []
+  },
+  "00497373000110": {
+   "ceis": [],
+   "cnep": []
+  },
+  "00509018000113": {
+   "ceis": [],
+   "cnep": []
+  },
+  "00521294000105": {
+   "ceis": [],
+   "cnep": []
+  },
+  "00706432000112": {
+   "ceis": [],
+   "cnep": []
+  },
+  "00707468000110": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01002812000139": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01114245000102": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01151131000132": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01181242000353": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01342660000113": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01377889000193": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01444608000178": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01447406000180": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01464579000106": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01601851000314": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01608702000115": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01884133000130": {
+   "ceis": [],
+   "cnep": []
+  },
+  "01988853000146": {
+   "ceis": [],
+   "cnep": []
+  },
+  "02012862000160": {
+   "ceis": [],
+   "cnep": []
+  },
+  "02215288000147": {
+   "ceis": [],
+   "cnep": []
+  },
+  "02423819000197": {
+   "ceis": [],
+   "cnep": []
+  },
+  "02477571000147": {
+   "ceis": [],
+   "cnep": []
+  },
+  "02548854000132": {
+   "ceis": [],
+   "cnep": []
+  },
+  "02558157013574": {
+   "ceis": [],
+   "cnep": []
+  },
+  "02593165000140": {
+   "ceis": [],
+   "cnep": []
+  },
+  "02642492000144": {
+   "ceis": [],
+   "cnep": []
+  },
+  "02778129000150": {
+   "ceis": [],
+   "cnep": []
+  },
+  "02957511000121": {
+   "ceis": [],
+   "cnep": []
+  },
+  "03232670000121": {
+   "ceis": [],
+   "cnep": []
+  },
+  "03263975000524": {
+   "ceis": [],
+   "cnep": []
+  },
+  "03517258000158": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "TRIBUNAL DE JUSTICA DA BAHIA (TJ-BA)",
+     "inicio": "23/10/2026",
+     "fim": "23/04/2027",
+     "publicacao": "23/10/2026",
+     "fundamentacao": "LEI 14133 - ART. 155, IV - ART. 155. O LICITANTE OU O CONTRATADO SERÁ RESPONSABILIZADO ADMINISTRATIVAMENTE PELAS SEGUINT"
+    }
+   ],
+   "cnep": []
+  },
+  "03619767000515": {
+   "ceis": [],
+   "cnep": []
+  },
+  "03659378000190": {
+   "ceis": [],
+   "cnep": []
+  },
+  "04198254000117": {
+   "ceis": [],
+   "cnep": []
+  },
+  "04248864000188": {
+   "ceis": [],
+   "cnep": []
+  },
+  "04383961000183": {
+   "ceis": [],
+   "cnep": []
+  },
+  "04567265000127": {
+   "ceis": [],
+   "cnep": []
+  },
+  "04615450000140": {
+   "ceis": [],
+   "cnep": []
+  },
+  "04665574000130": {
+   "ceis": [],
+   "cnep": []
+  },
+  "04689484000189": {
+   "ceis": [],
+   "cnep": []
+  },
+  "04768702000170": {
+   "ceis": [],
+   "cnep": []
+  },
+  "04941693000178": {
+   "ceis": [],
+   "cnep": []
+  },
+  "04948334000142": {
+   "ceis": [],
+   "cnep": []
+  },
+  "05286960000183": {
+   "ceis": [],
+   "cnep": []
+  },
+  "05293074000187": {
+   "ceis": [],
+   "cnep": []
+  },
+  "05340639000130": {
+   "ceis": [],
+   "cnep": []
+  },
+  "05342580000119": {
+   "ceis": [],
+   "cnep": []
+  },
+  "05468417000105": {
+   "ceis": [],
+   "cnep": []
+  },
+  "05907755000198": {
+   "ceis": [],
+   "cnep": []
+  },
+  "05989242000173": {
+   "ceis": [],
+   "cnep": []
+  },
+  "06083148000113": {
+   "ceis": [],
+   "cnep": []
+  },
+  "06122184000149": {
+   "ceis": [],
+   "cnep": []
+  },
+  "06132270000132": {
+   "ceis": [],
+   "cnep": []
+  },
+  "06258720000138": {
+   "ceis": [],
+   "cnep": []
+  },
+  "07168075000125": {
+   "ceis": [],
+   "cnep": []
+  },
+  "07171299000196": {
+   "ceis": [],
+   "cnep": []
+  },
+  "07204578000109": {
+   "ceis": [],
+   "cnep": []
+  },
+  "07259712000179": {
+   "ceis": [],
+   "cnep": []
+  },
+  "07268152000461": {
+   "ceis": [],
+   "cnep": []
+  },
+  "07379057000192": {
+   "ceis": [],
+   "cnep": []
+  },
+  "07404918000145": {
+   "ceis": [],
+   "cnep": []
+  },
+  "07522669000192": {
+   "ceis": [],
+   "cnep": []
+  },
+  "07575651000159": {
+   "ceis": [],
+   "cnep": []
+  },
+  "07590023000142": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "COMANDO DA AERONAUTICA",
+     "inicio": "10/11/2026",
+     "fim": "10/12/2026",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    }
+   ],
+   "cnep": []
+  },
+  "07795905000144": {
+   "ceis": [],
+   "cnep": []
+  },
+  "07797967000195": {
+   "ceis": [],
+   "cnep": []
+  },
+  "08103118000157": {
+   "ceis": [],
+   "cnep": []
+  },
+  "08220275000142": {
+   "ceis": [],
+   "cnep": []
+  },
+  "08528076000104": {
+   "ceis": [],
+   "cnep": []
+  },
+  "08612803000109": {
+   "ceis": [],
+   "cnep": []
+  },
+  "08744139000151": {
+   "ceis": [],
+   "cnep": []
+  },
+  "08911585000103": {
+   "ceis": [],
+   "cnep": []
+  },
+  "09015414000169": {
+   "ceis": [],
+   "cnep": []
+  },
+  "09094300000151": {
+   "ceis": [],
+   "cnep": []
+  },
+  "09132659000176": {
+   "ceis": [],
+   "cnep": []
+  },
+  "09168704000142": {
+   "ceis": [],
+   "cnep": []
+  },
+  "09240519000111": {
+   "ceis": [],
+   "cnep": []
+  },
+  "10309285000109": {
+   "ceis": [],
+   "cnep": []
+  },
+  "10427965000119": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "TRIBUNAL DE JUSTICA DO ESTADO DO R. G. NORTE",
+     "inicio": "28/04/2026",
+     "fim": "28/04/2028",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "SUPREMO TRIBUNAL FEDERAL",
+     "inicio": "09/12/2025",
+     "fim": "08/12/2028",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "DEFENSORIA PUBLICA DA UNIAO",
+     "inicio": "07/08/2025",
+     "fim": "07/08/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 10520 - ART. 7º - QUEM, CONVOCADO DENTRO DO PRAZO DE VALIDADE DA SUA PROPOSTA, NÃO CELEBRAR O CONTRATO, DEIXAR DE EN"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Declaração de Inidoneidade com prazo determinado",
+     "orgao": "TRIBUNAL DE CONTAS DA UNIAO",
+     "inicio": "08/07/2026",
+     "fim": "08/07/2029",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, IV - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA,"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "TRIBUNAL DE JUSTICA DO ESTADO DO RIO JANEIRO",
+     "inicio": "22/04/2026",
+     "fim": "22/04/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "UNIVERSIDADE FEDERAL DE GOIAS",
+     "inicio": "24/02/2026",
+     "fim": "24/02/2028",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "SUPREMO TRIBUNAL FEDERAL",
+     "inicio": "18/09/2025",
+     "fim": "17/04/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "TRIBUNAL DE JUSTICA DO ESTADO DO R. G. NORTE",
+     "inicio": "04/12/2025",
+     "fim": "04/12/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "DEFENSORIA PUBLICA DA UNIAO",
+     "inicio": "11/08/2025",
+     "fim": "11/08/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 10520 - ART. 7º - QUEM, CONVOCADO DENTRO DO PRAZO DE VALIDADE DA SUA PROPOSTA, NÃO CELEBRAR O CONTRATO, DEIXAR DE EN"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "TRIBUNAL DE JUSTICA DO ESTADO DO R. G. NORTE",
+     "inicio": "09/10/2025",
+     "fim": "09/10/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "Tribunal de Justiça do Estado do Rio Grande do Norte (TJRN)",
+     "inicio": "28/04/2026",
+     "fim": "28/04/2028",
+     "publicacao": "28/04/2026",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "CÂMARA MUNICIPAL DE BELO HORIZONTE (MG)",
+     "inicio": "12/07/2025",
+     "fim": "12/07/2027",
+     "publicacao": "12/07/2025",
+     "fundamentacao": "LEI 10520 - ART. 7ºº - ART. 7º  QUEM, CONVOCADO DENTRO DO PRAZO DE VALIDADE DA SUA PROPOSTA, NÃO CELEBRAR O CONTRATO, DE"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "MINISTERIO DA CIENCIA,TECNOLOGIA E INOVAÇÃO",
+     "inicio": "21/07/2025",
+     "fim": "21/07/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "SUPERINTENDÊNCIA REGIONAL DO DNIT - TO",
+     "inicio": "04/03/2026",
+     "fim": "03/03/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "TRIBUNAL DE CONTAS DA UNIAO",
+     "inicio": "19/02/2026",
+     "fim": "19/02/2028",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 10520 - ART. 7º - QUEM, CONVOCADO DENTRO DO PRAZO DE VALIDADE DA SUA PROPOSTA, NÃO CELEBRAR O CONTRATO, DEIXAR DE EN"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "Tribunal de Justiça do Estado do Rio de Janeiro (TJRJ)",
+     "inicio": "16/04/2026",
+     "fim": "16/01/2027",
+     "publicacao": "12/03/2026",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "Tribunal de Justiça do Estado do Rio de Janeiro (TJRJ)",
+     "inicio": "22/04/2026",
+     "fim": "22/04/2027",
+     "publicacao": "16/03/2026",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "Tribunal de Justiça do Estado do Rio Grande do Norte (TJRN)",
+     "inicio": "22/04/2025",
+     "fim": "22/04/2027",
+     "publicacao": "22/04/2025",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "TRIBUNAL DE JUSTICA DO ESTADO DO R. G. NORTE",
+     "inicio": "22/04/2025",
+     "fim": "22/04/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "Tribunal de Justiça do Estado do Rio de Janeiro (TJRJ)",
+     "inicio": "14/04/2026",
+     "fim": "14/01/2027",
+     "publicacao": "09/03/2026",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "SUPERINTENDÊNCIA REGIONAL DO DNIT - ES",
+     "inicio": "12/11/2025",
+     "fim": "12/11/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "DEFENSORIA PUBLICA DA UNIAO",
+     "inicio": "28/05/2026",
+     "fim": "28/05/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "MINISTERIO DA CIENCIA,TECNOLOGIA E INOVAÇÃO",
+     "inicio": "22/08/2025",
+     "fim": "28/08/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "TRIBUNAL DE CONTAS DA UNIAO",
+     "inicio": "22/10/2026",
+     "fim": "21/10/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 10520 - ART. 7º - QUEM, CONVOCADO DENTRO DO PRAZO DE VALIDADE DA SUA PROPOSTA, NÃO CELEBRAR O CONTRATO, DEIXAR DE EN"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "Tribunal de Justiça do Estado do Rio de Janeiro (TJRJ)",
+     "inicio": "28/04/2026",
+     "fim": "28/04/2027",
+     "publicacao": "18/03/2026",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "DEFENSORIA PUBLICA DA UNIAO",
+     "inicio": "10/07/2025",
+     "fim": "10/07/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "DEFENSORIA PUBLICA DA UNIAO",
+     "inicio": "09/02/2026",
+     "fim": "09/02/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 10520 - ART. 7º - QUEM, CONVOCADO DENTRO DO PRAZO DE VALIDADE DA SUA PROPOSTA, NÃO CELEBRAR O CONTRATO, DEIXAR DE EN"
+    }
+   ],
+   "cnep": []
+  },
+  "10498974000281": {
+   "ceis": [],
+   "cnep": []
+  },
+  "10719671000160": {
+   "ceis": [],
+   "cnep": []
+  },
+  "10762976000155": {
+   "ceis": [],
+   "cnep": []
+  },
+  "11024632000101": {
+   "ceis": [],
+   "cnep": []
+  },
+  "11119634000184": {
+   "ceis": [],
+   "cnep": []
+  },
+  "11182905000146": {
+   "ceis": [],
+   "cnep": []
+  },
+  "11383230000101": {
+   "ceis": [],
+   "cnep": []
+  },
+  "12287498000102": {
+   "ceis": [],
+   "cnep": []
+  },
+  "12422562000102": {
+   "ceis": [],
+   "cnep": []
+  },
+  "12531678000180": {
+   "ceis": [],
+   "cnep": []
+  },
+  "12630233000157": {
+   "ceis": [],
+   "cnep": []
+  },
+  "13308204000136": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "INST.FED.DE EDUC.,CIENC.E TEC.FLUMINENSE",
+     "inicio": "14/07/2026",
+     "fim": "14/07/2028",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 10520 - ART. 7º - QUEM, CONVOCADO DENTRO DO PRAZO DE VALIDADE DA SUA PROPOSTA, NÃO CELEBRAR O CONTRATO, DEIXAR DE EN"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "Prefeitura Municipal de Colniza - MT",
+     "inicio": "21/10/2025",
+     "fim": "21/10/2027",
+     "publicacao": "29/09/2025",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR; LEI 14133 - ART. 156, II - MULTA"
+    }
+   ],
+   "cnep": []
+  },
+  "13663209000187": {
+   "ceis": [],
+   "cnep": []
+  },
+  "13813782000120": {
+   "ceis": [],
+   "cnep": []
+  },
+  "14115388000261": {
+   "ceis": [],
+   "cnep": []
+  },
+  "14458290000126": {
+   "ceis": [],
+   "cnep": []
+  },
+  "14945616000140": {
+   "ceis": [],
+   "cnep": []
+  },
+  "15676062000195": {
+   "ceis": [],
+   "cnep": []
+  },
+  "16538909000138": {
+   "ceis": [],
+   "cnep": []
+  },
+  "16650774000106": {
+   "ceis": [],
+   "cnep": []
+  },
+  "16970920000172": {
+   "ceis": [],
+   "cnep": []
+  },
+  "17211866000144": {
+   "ceis": [],
+   "cnep": []
+  },
+  "17791755000154": {
+   "ceis": [],
+   "cnep": []
+  },
+  "17812072000136": {
+   "ceis": [],
+   "cnep": []
+  },
+  "17866399000190": {
+   "ceis": [],
+   "cnep": []
+  },
+  "18607653000107": {
+   "ceis": [],
+   "cnep": []
+  },
+  "19340817000137": {
+   "ceis": [],
+   "cnep": []
+  },
+  "19744306000180": {
+   "ceis": [],
+   "cnep": []
+  },
+  "19804618000132": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "SUPREMO TRIBUNAL FEDERAL",
+     "inicio": "26/12/2025",
+     "fim": "25/12/2026",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "SUPREMO TRIBUNAL FEDERAL",
+     "inicio": "23/04/2026",
+     "fim": "22/04/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    }
+   ],
+   "cnep": []
+  },
+  "19877285000252": {
+   "ceis": [],
+   "cnep": []
+  },
+  "20280412000130": {
+   "ceis": [],
+   "cnep": []
+  },
+  "20426511000187": {
+   "ceis": [],
+   "cnep": []
+  },
+  "21051725000189": {
+   "ceis": [],
+   "cnep": []
+  },
+  "21142448000110": {
+   "ceis": [],
+   "cnep": []
+  },
+  "21323689000165": {
+   "ceis": [],
+   "cnep": []
+  },
+  "21570782000174": {
+   "ceis": [],
+   "cnep": []
+  },
+  "21603466000151": {
+   "ceis": [],
+   "cnep": []
+  },
+  "21748841000151": {
+   "ceis": [],
+   "cnep": []
+  },
+  "22233581000144": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "CAIXA ECONOMICA FEDERAL",
+     "inicio": "05/10/2026",
+     "fim": "05/06/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 13303 - ART. 83, II E III - ART. 83. PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A EMPRESA PÚBLICA OU A SOCIEDADE D"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "PMSP - EMPRESA DE TEC. DA INFORMAÇÃO - PRODAM",
+     "inicio": "09/06/2025",
+     "fim": "09/06/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 13303 - ART. 83, II E III - ART. 83. PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A EMPRESA PÚBLICA OU A SOCIEDADE D"
+    }
+   ],
+   "cnep": []
+  },
+  "23021050000150": {
+   "ceis": [],
+   "cnep": []
+  },
+  "24384947000101": {
+   "ceis": [],
+   "cnep": []
+  },
+  "24784167000230": {
+   "ceis": [],
+   "cnep": []
+  },
+  "25165749000110": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "Empresa Brasileira de Correios e Telégrafos",
+     "inicio": "19/03/2026",
+     "fim": "19/03/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 13303 - ART. 83, III - III - SUSPENSÃO TEMPORÁRIA DE PARTICIPAÇÃO EM LICITAÇÃO E IMPEDIMENTO DE CONTRATAR COM A ENTI"
+    }
+   ],
+   "cnep": []
+  },
+  "25359140000181": {
+   "ceis": [],
+   "cnep": []
+  },
+  "26348306000127": {
+   "ceis": [],
+   "cnep": []
+  },
+  "26444653000153": {
+   "ceis": [],
+   "cnep": []
+  },
+  "27116402000102": {
+   "ceis": [],
+   "cnep": []
+  },
+  "27477776000153": {
+   "ceis": [],
+   "cnep": []
+  },
+  "27589698000189": {
+   "ceis": [],
+   "cnep": []
+  },
+  "27691290000113": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "SUPERIOR TRIBUNAL DE JUSTICA",
+     "inicio": "18/06/2026",
+     "fim": "02/02/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    }
+   ],
+   "cnep": []
+  },
+  "28020297000176": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "EMA-ESTADO DO MARANHÃO",
+     "inicio": "11/03/2025",
+     "fim": "11/03/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 13303 - ART. 83, II E III - ART. 83. PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A EMPRESA PÚBLICA OU A SOCIEDADE D"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "COMANDO DO EXERCITO",
+     "inicio": "31/01/2025",
+     "fim": "13/02/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "MINISTERIO PUBLICO DO ESTADO DO MATO GROSSO",
+     "inicio": "30/03/2026",
+     "fim": "30/03/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "CAMARA DOS DEPUTADOS",
+     "inicio": "10/03/2026",
+     "fim": "10/03/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 10520 - ART. 7º - QUEM, CONVOCADO DENTRO DO PRAZO DE VALIDADE DA SUA PROPOSTA, NÃO CELEBRAR O CONTRATO, DEIXAR DE EN"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Declaração de Inidoneidade com prazo determinado",
+     "orgao": "UNIVERSIDADE FED DA INTEGR LATINO-AMERICANA",
+     "inicio": "09/12/2024",
+     "fim": "09/12/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, IV - DECLARAÇÃO DE INIDONEIDADE PARA LICITAR OU CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "JUSTICA DO TRABALHO",
+     "inicio": "23/06/2025",
+     "fim": "23/06/2028",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    }
+   ],
+   "cnep": []
+  },
+  "28475608000191": {
+   "ceis": [],
+   "cnep": []
+  },
+  "28927482000149": {
+   "ceis": [],
+   "cnep": []
+  },
+  "29188143000150": {
+   "ceis": [],
+   "cnep": []
+  },
+  "30702243000132": {
+   "ceis": [],
+   "cnep": []
+  },
+  "31597585000100": {
+   "ceis": [],
+   "cnep": []
+  },
+  "31872648000181": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "MGO-PREFEITURA MUNICIPAL DE RIO VERDE",
+     "inicio": "10/06/2026",
+     "fim": "09/12/2026",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    }
+   ],
+   "cnep": []
+  },
+  "32005178000111": {
+   "ceis": [],
+   "cnep": []
+  },
+  "32029690000106": {
+   "ceis": [],
+   "cnep": []
+  },
+  "32289788000194": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "COMANDO DA AERONAUTICA",
+     "inicio": "22/09/2026",
+     "fim": "22/09/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 10520 - ART. 7º - QUEM, CONVOCADO DENTRO DO PRAZO DE VALIDADE DA SUA PROPOSTA, NÃO CELEBRAR O CONTRATO, DEIXAR DE EN"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "COMANDO DA AERONÁUTICA",
+     "inicio": "22/09/2026",
+     "fim": "22/09/2027",
+     "publicacao": "21/09/2026",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    }
+   ],
+   "cnep": []
+  },
+  "32310481000128": {
+   "ceis": [],
+   "cnep": []
+  },
+  "32468112000168": {
+   "ceis": [],
+   "cnep": []
+  },
+  "32555204000185": {
+   "ceis": [],
+   "cnep": []
+  },
+  "32593430000150": {
+   "ceis": [],
+   "cnep": []
+  },
+  "32597474000159": {
+   "ceis": [],
+   "cnep": []
+  },
+  "32738240000184": {
+   "ceis": [],
+   "cnep": []
+  },
+  "32838145000152": {
+   "ceis": [],
+   "cnep": []
+  },
+  "33065699000127": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "SECRETARIA MUNICIPAL DE SAUDE DE CARUARU - PE",
+     "inicio": "19/03/2026",
+     "fim": "19/12/2026",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "MINISTERIO PUBLICO DA UNIAO",
+     "inicio": "26/05/2026",
+     "fim": "26/11/2026",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    }
+   ],
+   "cnep": []
+  },
+  "33369666000170": {
+   "ceis": [],
+   "cnep": []
+  },
+  "33402892000106": {
+   "ceis": [],
+   "cnep": []
+  },
+  "33469172006360": {
+   "ceis": [],
+   "cnep": []
+  },
+  "33641663000144": {
+   "ceis": [],
+   "cnep": []
+  },
+  "33683111000107": {
+   "ceis": [],
+   "cnep": []
+  },
+  "33931327000136": {
+   "ceis": [],
+   "cnep": []
+  },
+  "34577443000161": {
+   "ceis": [],
+   "cnep": []
+  },
+  "34782400000118": {
+   "ceis": [],
+   "cnep": []
+  },
+  "35063195000101": {
+   "ceis": [],
+   "cnep": []
+  },
+  "35205218000167": {
+   "ceis": [],
+   "cnep": []
+  },
+  "35486862000150": {
+   "ceis": [],
+   "cnep": []
+  },
+  "35711699000182": {
+   "ceis": [],
+   "cnep": []
+  },
+  "36366186000144": {
+   "ceis": [],
+   "cnep": []
+  },
+  "36369883000159": {
+   "ceis": [],
+   "cnep": []
+  },
+  "36668854000198": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "TRIBUNAL DE JUSTICA ESTADO DO PARANA",
+     "inicio": "02/07/2026",
+     "fim": "02/07/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "CAMARA MUNICIPAL DE GOIANIA - GO",
+     "inicio": "14/09/2026",
+     "fim": "13/09/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 10520 - ART. 7º - QUEM, CONVOCADO DENTRO DO PRAZO DE VALIDADE DA SUA PROPOSTA, NÃO CELEBRAR O CONTRATO, DEIXAR DE EN"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "UNIVERSIDADE FED DA INTEGR LATINO-AMERICANA",
+     "inicio": "06/10/2026",
+     "fim": "06/07/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    }
+   ],
+   "cnep": []
+  },
+  "37162435000657": {
+   "ceis": [],
+   "cnep": []
+  },
+  "37566567000130": {
+   "ceis": [],
+   "cnep": []
+  },
+  "38068529000110": {
+   "ceis": [],
+   "cnep": []
+  },
+  "38120875000108": {
+   "ceis": [],
+   "cnep": []
+  },
+  "38482591000153": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "TRIBUNAL DE JUSTICA DA BAHIA (TJ-BA)",
+     "inicio": "31/12/2025",
+     "fim": "01/07/2026",
+     "publicacao": "16/12/2025",
+     "fundamentacao": "LEI 14133 - ART. 155, IV - ART. 155. O LICITANTE OU O CONTRATADO SERÁ RESPONSABILIZADO ADMINISTRATIVAMENTE PELAS SEGUINT"
+    }
+   ],
+   "cnep": []
+  },
+  "39271477000228": {
+   "ceis": [],
+   "cnep": []
+  },
+  "39599227000130": {
+   "ceis": [],
+   "cnep": []
+  },
+  "39757934000108": {
+   "ceis": [],
+   "cnep": []
+  },
+  "40050950000145": {
+   "ceis": [],
+   "cnep": []
+  },
+  "40176679000199": {
+   "ceis": [],
+   "cnep": []
+  },
+  "40251299000171": {
+   "ceis": [],
+   "cnep": []
+  },
+  "40359757000190": {
+   "ceis": [],
+   "cnep": []
+  },
+  "40363610000174": {
+   "ceis": [],
+   "cnep": []
+  },
+  "40432544000147": {
+   "ceis": [],
+   "cnep": []
+  },
+  "40628906000170": {
+   "ceis": [],
+   "cnep": []
+  },
+  "41340391000170": {
+   "ceis": [],
+   "cnep": []
+  },
+  "41769803000192": {
+   "ceis": [],
+   "cnep": []
+  },
+  "42224229000150": {
+   "ceis": [],
+   "cnep": []
+  },
+  "42746791000143": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "INST.FED.DE EDUC.,CIENC.E TECNOLOGIA DA BAHIA",
+     "inicio": "14/01/2026",
+     "fim": "13/01/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    }
+   ],
+   "cnep": []
+  },
+  "45354165000108": {
+   "ceis": [],
+   "cnep": []
+  },
+  "45546237000100": {
+   "ceis": [],
+   "cnep": []
+  },
+  "45851531000126": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "COMANDO DO EXERCITO",
+     "inicio": "08/09/2026",
+     "fim": "08/09/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 10520 - ART. 7º - QUEM, CONVOCADO DENTRO DO PRAZO DE VALIDADE DA SUA PROPOSTA, NÃO CELEBRAR O CONTRATO, DEIXAR DE EN"
+    }
+   ],
+   "cnep": []
+  },
+  "46108279000122": {
+   "ceis": [],
+   "cnep": []
+  },
+  "46207264000111": {
+   "ceis": [],
+   "cnep": []
+  },
+  "47327708000115": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "JUSTICA ELEITORAL",
+     "inicio": "24/09/2026",
+     "fim": "29/11/2026",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    }
+   ],
+   "cnep": []
+  },
+  "47433137000101": {
+   "ceis": [],
+   "cnep": []
+  },
+  "47900758000140": {
+   "ceis": [],
+   "cnep": []
+  },
+  "48724321000165": {
+   "ceis": [],
+   "cnep": []
+  },
+  "48737420000181": {
+   "ceis": [],
+   "cnep": []
+  },
+  "48937226000140": {
+   "ceis": [],
+   "cnep": []
+  },
+  "48987254000171": {
+   "ceis": [],
+   "cnep": []
+  },
+  "49058654000165": {
+   "ceis": [],
+   "cnep": []
+  },
+  "49960280000179": {
+   "ceis": [],
+   "cnep": []
+  },
+  "50308106000125": {
+   "ceis": [],
+   "cnep": []
+  },
+  "50340940000106": {
+   "ceis": [],
+   "cnep": []
+  },
+  "50889102000188": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "Tribunal Regional Federal da 3ª Região (TRF-3)",
+     "inicio": "26/06/2026",
+     "fim": "26/09/2026",
+     "publicacao": "26/06/2026",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR; LEI 14133 - ART. 155, III - ART. 155. O LICITANTE OU O CONTRATADO SERÁ RESPONSABILIZADO ADMINISTRATIVAMENTE PELAS SEGUIN"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "COMPANHIA DE SANEAMENTO MUNICIPAL JUIZ FORA",
+     "inicio": "25/11/2025",
+     "fim": "25/11/2026",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 13303 - ART. 83, II E III - ART. 83. PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A EMPRESA PÚBLICA OU A SOCIEDADE D"
+    },
+    {
+     "cadastro": "CEIS",
+     "tipo": "Suspensão",
+     "orgao": "Prefeitura Municipal de Santa Rosa (RS)",
+     "inicio": "28/05/2026",
+     "fim": "27/05/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 8666 - ART. 87, III - PELA INEXECUÇÃO TOTAL OU PARCIAL DO CONTRATO A ADMINISTRAÇÃO PODERÁ, GARANTIDA A PRÉVIA DEFESA"
+    }
+   ],
+   "cnep": []
+  },
+  "50912234000183": {
+   "ceis": [],
+   "cnep": []
+  },
+  "51109832000181": {
+   "ceis": [],
+   "cnep": []
+  },
+  "52046008000192": {
+   "ceis": [
+    {
+     "cadastro": "CEIS",
+     "tipo": "Impedimento/proibição de contratar com prazo determinado",
+     "orgao": "CONSELHO REGION. DE ENGENHARIA E AGRONOMIA/PR",
+     "inicio": "12/09/2025",
+     "fim": "11/09/2027",
+     "publicacao": "Sem informação",
+     "fundamentacao": "LEI 14133 - ART. 156, III - IMPEDIMENTO DE LICITAR E CONTRATAR"
+    }
+   ],
+   "cnep": []
+  },
+  "52704921000139": {
+   "ceis": [],
+   "cnep": []
+  },
+  "54603378000109": {
+   "ceis": [],
+   "cnep": []
+  },
+  "57243803000194": {
+   "ceis": [],
+   "cnep": []
+  },
+  "57494031000163": {
+   "ceis": [],
+   "cnep": []
+  },
+  "57494031001054": {
+   "ceis": [],
+   "cnep": []
+  },
+  "59104760000191": {
+   "ceis": [],
+   "cnep": []
+  },
+  "59456277000176": {
+   "ceis": [],
+   "cnep": []
+  },
+  "59456277000338": {
+   "ceis": [],
+   "cnep": []
+  },
+  "60316817000103": {
+   "ceis": [],
+   "cnep": []
+  },
+  "60501293000112": {
+   "ceis": [],
+   "cnep": []
+  },
+  "61160768000117": {
+   "ceis": [],
+   "cnep": []
+  },
+  "61600839000155": {
+   "ceis": [],
+   "cnep": []
+  },
+  "61797924000740": {
+   "ceis": [],
+   "cnep": []
+  },
+  "62958491000135": {
+   "ceis": [],
+   "cnep": []
+  },
+  "63998156000123": {
+   "ceis": [],
+   "cnep": []
+  },
+  "72381189000110": {
+   "ceis": [],
+   "cnep": []
+  },
+  "72381189001001": {
+   "ceis": [],
+   "cnep": []
+  },
+  "72381189001354": {
+   "ceis": [],
+   "cnep": []
+  },
+  "78533312000158": {
+   "ceis": [],
+   "cnep": []
+  },
+  "83891283000136": {
+   "ceis": [],
+   "cnep": []
+  },
+  "84113349000200": {
+   "ceis": [],
+   "cnep": []
+  },
+  "86781069000115": {
+   "ceis": [],
+   "cnep": []
+  },
+  "87140307000176": {
+   "ceis": [],
+   "cnep": []
+  },
+  "90347840000622": {
+   "ceis": [],
+   "cnep": []
+  },
+  "93969707000191": {
+   "ceis": [],
+   "cnep": []
+  },
+  "97533241000138": {
+   "ceis": [],
+   "cnep": []
+  }
+ }
+}

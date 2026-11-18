@@ -24,6 +24,11 @@ Histórico de versões:
   (corrige a censura à direita) e **probabilidades calibradas** (isotônica).
   Todos os artefatos da v1 foram preservados; o `processa.py` usa a v2 quando
   `ml_stf_v2.json` existe, com fallback automático para a v1.
+- **18/11/2026** — **escala oficial da Res. STF 781/2022** (níveis 1·2·5·8·10,
+  risco inerente 0–100), a partir dos anexos da norma, centralizada em
+  `pipeline/escala_781.py`; **carteira do STF deduplicada** (365 registros → 293
+  contratos); **sanções CEIS/CNEP** integradas via API do Portal da
+  Transparência. Detalhes no topo do [RESULTADOS.md](RESULTADOS.md).
 
 ## O que é real nesta versão
 
@@ -34,10 +39,17 @@ Histórico de versões:
 | API de busca do PNCP (`pncp.gov.br/api/search`) | Presença nacional dos 15 maiores fornecedores do STF | Módulo 2 |
 | Dados abertos do CNPJ — Receita Federal (via minhareceita.org) | Capital social, porte, idade, CNAE, situação de **9.598 fornecedores** | Módulo 2 + features |
 | API de pesquisa de preços do compras.gov.br | Distribuição nacional de preços homologados por item de catálogo | Módulo 1 |
+| API do Portal da Transparência — CEIS e CNEP | Sanções dos 232 fornecedores do STF (19 com registro) | Módulos 2 e 3 |
 
-**Ainda não coletado** (exige credenciamento institucional): CEIS/CNEP, SICAF,
-CNDT/TST — o dashboard indica esses itens como pendentes, conforme a
-recomendação de usar APIs oficiais em vez de raspagem (análise crítica, 2.3).
+**Ainda não coletado** (sem API pública): SICAF e CNDT/TST — o dashboard indica
+esses itens como pendentes, conforme a recomendação de usar APIs oficiais em vez
+de raspagem (análise crítica, 2.3).
+
+**Chave do Portal da Transparência:** é pessoal e **nunca** entra no repositório.
+`coleta_sancoes.py` a lê da variável de ambiente `PORTAL_TRANSPARENCIA_CHAVE` ou
+do arquivo `~/.antecipa/portal_transparencia.key`; sem ela, o script avisa e
+termina, e o pipeline usa o cache público já versionado
+(`dados/brutos/sancoes_stf.json`). O `.gitignore` bloqueia `*.key` e `.env`.
 
 ## Modelo supervisionado (v2)
 
@@ -59,7 +71,7 @@ recomendação de usar APIs oficiais em vez de raspagem (análise crítica, 2.3)
 | Gradient Boosting v2 | 0,109 | 0,494 | 0,179 | **0,139** (lift 6,6×) | 0,806 |
 | Regressão Logística v2 | 0,052 | 0,647 | 0,096 | 0,065 | 0,755 |
 | v1 · Gradient Boosting | 0,064 | 0,393 | 0,111 | 0,071 (lift 4,4×) | 0,798 |
-| v1 · Baseline heurístico (Res. 781) | 0,067 | 0,129 | 0,088 | 0,033 | 0,705 |
+| v1 · Baseline heurístico (Res. 781, escala oficial) | 0,032 | 0,036 | 0,034 | 0,031 | 0,701 |
 
   Visão operacional (fila de diligência): entre os 100 contratos de 2025 com
   maior escore, 16 tiveram desfecho adverso real (7,6× a taxa base).
@@ -116,8 +128,9 @@ python coleta_precos_v2.py    # preços de referência via PDM/CATMAT + reparos
 python coleta_multi.py        # 10 tribunais federais: contratos + termos
 python repara_multi.py        # refaz janelas que falharam por rate-limit
 python coleta_cadastros.py    # Receita Federal p/ todos os fornecedores únicos
+python coleta_sancoes.py      # CEIS/CNEP dos fornecedores do STF (requer chave; ver acima)
 
-# Datasets e modelos
+# Datasets e modelos  (escala oficial da Res. 781 em escala_781.py)
 python monta_dataset.py       # v1: dataset_ml_multi.csv (rótulo sem horizonte)
 python treina_modelo.py       # v1: treino + relatorio_modelo.md + ml_stf.json
 python monta_dataset_v2.py    # v2: rótulo com horizonte de 12 meses
@@ -129,7 +142,8 @@ python publica_modelo_v2.py   # v2 calibrado p/ dashboard (ml_stf_v2.json)
 python gera_relatorio.py      # relatório Word (grava em ../, fora do repo)
 
 # Dashboard
-python processa.py            # consolida STF + predições (v2 se existir, senão v1)
+python processa.py            # consolida STF (deduplicado) + sanções + predições
+python metricas_carteira_stf.py # critérios de alerta na carteira do STF (RESULTADOS 5.4)
 python gera_dashboard.py      # grava ../../ANTECIPA_dashboard_real.html
 ```
 
@@ -153,6 +167,7 @@ antecipa-real/
 │   ├── calibracao_metricas.json     Brier, ECE e curvas por bin
 │   ├── comparacao_explicacoes.md    SHAP × logística: concordância e exemplos
 │   ├── comparacao_explicacoes.png   as duas explicações lado a lado
+│   ├── metricas_carteira_stf.md     critérios de alerta na carteira do STF
 │   ├── ml_stf.json / ml_stf_v2.json predições por contrato (v1 / v2 calibrado)
 │   └── modelo_metrics*.json         métricas em formato estruturado
 └── README.md

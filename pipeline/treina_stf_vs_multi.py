@@ -28,6 +28,8 @@ from sklearn.model_selection import cross_val_predict
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+import escala_781 as E
+
 BASE = Path(__file__).resolve().parent.parent
 PROC = BASE / "dados" / "processados"
 
@@ -87,6 +89,9 @@ def faz_pipeline(clf):
     return Pipeline([("pre", pre), ("clf", clf)])
 
 
+PROBS_GB = {}   # probabilidades de teste do GB, para o bootstrap
+
+
 def avalia(nome, mask_treino):
     out = {}
     for algo, clf in [
@@ -106,6 +111,8 @@ def avalia(nome, mask_treino):
         thr = float(ths[int(np.argmax(f1s))])
         mdl.fit(X[mask_treino], y[mask_treino])
         p = mdl.predict_proba(X[teste])[:, 1]
+        if algo == "GradBoost":
+            PROBS_GB[nome.strip()] = p
         yhat = (p >= thr).astype(int)
         pr, rc, f1, _ = precision_recall_fscore_support(
             y[teste], yhat, average="binary", zero_division=0)
@@ -146,9 +153,11 @@ def heuristica(r):
 vals_tr = np.array([num(r, "valor_global") for r in rows])[tr_stf]
 quintis = np.nanpercentile(vals_tr, [20, 40, 60, 80])
 imp_i = 1 + np.searchsorted(quintis, [num(r, "valor_global") for r in rows])
-prob_i = np.clip(np.round([heuristica(r) for r in rows]), 1, 5)
-heur_alto = ((prob_i * imp_i) > 9).astype(int)
-heur_prob = (prob_i * imp_i) / 25
+prob_i = np.clip(np.round([heuristica(r) for r in rows]), 1, 5).astype(int)
+# régua oficial da Res. 781/2022: valores 1-2-5-8-10, risco inerente 0–100
+heur_pont = np.array([E.pontuacao(int(p), int(i)) for p, i in zip(prob_i, imp_i)])
+heur_alto = (heur_pont >= 40).astype(int)        # Elevado ou Crítico
+heur_prob = heur_pont / 100
 prh, rch, f1h, _ = precision_recall_fscore_support(
     y[teste], heur_alto[teste], average="binary", zero_division=0)
 res_heur = {"precision": round(prh, 3), "recall": round(rch, 3), "f1": round(f1h, 3),
@@ -156,6 +165,23 @@ res_heur = {"precision": round(prh, 3), "recall": round(rch, 3), "f1": round(f1h
             "roc_auc": round(roc_auc_score(y[teste], heur_prob[teste]), 3),
             "alertas": int(heur_alto[teste].sum())}
 print(f"baseline heurístico: {res_heur}")
+
+# ------------------------------------------ bootstrap: só-STF × multi (GB)
+yt = y[teste]
+p_s, p_m = PROBS_GB["só-STF"], PROBS_GB["multi"]
+rng = np.random.RandomState(0)
+difs = []
+for _ in range(4000):
+    idx = rng.randint(0, len(yt), len(yt))
+    if yt[idx].sum() == 0:
+        continue
+    difs.append(average_precision_score(yt[idx], p_s[idx])
+                - average_precision_score(yt[idx], p_m[idx]))
+difs = np.array(difs)
+ic_lo, ic_hi = np.percentile(difs, [2.5, 97.5])
+venc = (difs > 0).mean()
+print(f"bootstrap ΔPR-AUC (só-STF − multi): {difs.mean():+.3f} IC95% [{ic_lo:+.3f}; {ic_hi:+.3f}]")
+br = lambda v: f"{v:+.3f}".replace(".", ",")
 
 # ------------------------------------------------------------------ relatório
 def linha(nome, m):
@@ -184,10 +210,12 @@ histórico de um único órgão pode ser insuficiente para treinar sem overfitti
 {linha('Só STF · Gradient Boosting', res_stf['GradBoost'])}
 {linha('Multi-órgão · Regressão Logística', res_multi['LogReg'])}
 {linha('Multi-órgão · Gradient Boosting', res_multi['GradBoost'])}
-{linha('Baseline heurístico (Res. 781)', res_heur)}
+{linha('Baseline heurístico (Res. 781, Elevado/Crítico)', res_heur)}
 
 Prevalência no teste (PR-AUC de um classificador aleatório):
-{round(float(y[teste].mean()), 3)}.
+{round(float(y[teste].mean()), 3)}. O baseline usa a escala oficial da Res. STF
+781/2022 (níveis 1-2-5-8-10, risco inerente 0–100, alerta = Elevado ou Crítico,
+isto é, risco ≥ 40).
 
 ## Notas de leitura
 
@@ -201,6 +229,22 @@ Prevalência no teste (PR-AUC de um classificador aleatório):
 - O modelo multi-órgão vê o "padrão do Judiciário federal" (inclusive o próprio
   STF 2023–24) e por isso tende a generalizar melhor — é a recomendação nº 2 da
   análise crítica em ação.
+
+## Teste de significância (bootstrap, {len(difs)} reamostras do teste)
+
+Δ PR-AUC (só-STF − multi-órgão, Gradient Boosting): **{br(difs.mean())}**,
+IC 95 % **[{br(ic_lo)}; {br(ic_hi)}]**{' — o intervalo cruza zero' if ic_lo < 0 < ic_hi else ''}.
+O modelo só-STF vence em {venc*100:.0f} % das reamostras.
+
+**Leitura**: com {y[teste].sum()} positivos no teste, diferenças desta ordem não
+têm significância estatística. (i) O padrão local do STF carrega sinal específico
+relevante (prevalência de desfecho adverso {y[tr_stf].mean()*100:.0f} % no treino
+só-STF vs. {y[tr_multi].mean()*100:.0f} % no multi) e um modelo local pequeno já
+supera o baseline heurístico; (ii) o modelo multi-órgão entrega desempenho
+comparável no STF com {tr_multi.sum()/max(tr_stf.sum(),1):.0f}× mais dados de
+treino, é mais estável fora da amostra e é o único viável para métricas
+confiáveis — o que sustenta, com nuance, a recomendação nº 2: treinar multi-órgão
+e, como refinamento futuro, calibrar/afinar por órgão.
 """
 (PROC / "comparacao_stf_vs_multi.md").write_text(rel, encoding="utf-8")
 print("\nRelatório: dados/processados/comparacao_stf_vs_multi.md")

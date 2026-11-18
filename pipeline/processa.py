@@ -10,8 +10,9 @@ Produz:
                                             crítica: rótulo = desfecho, não regra)
 
 Classificação exibida no dashboard: ESCORE HEURÍSTICO TRANSPARENTE (baseline),
-nas escalas 1–5 de probabilidade e impacto da Res. STF 781/2022. Não é ML — é a
-régua de comparação sobre a qual o modelo supervisionado será avaliado.
+nas escalas OFICIAIS da Res. STF 781/2022 (níveis 1-2-5-8-10, risco inerente de
+0 a 100 — ver escala_781.py). Não é ML — é a régua de comparação sobre a qual o
+modelo supervisionado é avaliado.
 """
 import csv
 import json
@@ -20,11 +21,13 @@ from collections import defaultdict
 from datetime import date
 from pathlib import Path
 
+import escala_781 as E
+
 BASE = Path(__file__).resolve().parent.parent
 RAW = BASE / "dados" / "brutos"
 OUT = BASE / "dados" / "processados"
 OUT.mkdir(parents=True, exist_ok=True)
-HOJE = date(2026, 7, 20)
+HOJE = date(2026, 7, 20)          # data da coleta do PNCP
 
 
 def load(nome):
@@ -38,11 +41,65 @@ def d(s):
         return None
 
 
-contratos = load("contratos_stf.json")
+def dbr(s):
+    """Data no formato do Portal da Transparência (dd/mm/aaaa)."""
+    try:
+        dd, mm, aa = s.strip().split("/")
+        return date(int(aa), int(mm), int(dd))
+    except (AttributeError, ValueError):
+        return None
+
+
+def deduplica(cs):
+    """A paginação do PNCP repete contratos (republicações/retificações): mantém um
+    registro por numeroControlePNCP — o de atualização mais recente."""
+    v = {}
+    for c in cs:
+        k = c.get("numeroControlePNCP")
+        at = c.get("dataAtualizacaoGlobal") or c.get("dataAtualizacao") or ""
+        if k not in v or at > (v[k].get("dataAtualizacaoGlobal") or v[k].get("dataAtualizacao") or ""):
+            v[k] = c
+    return list(v.values())
+
+
+_brutos = load("contratos_stf.json")
+contratos = deduplica(_brutos)
+N_REGISTROS_BRUTOS = len(_brutos)
 termos = load("termos_stf.json")
 fornecedores = load("fornecedores.json")
 itens_stf = load("itens_stf.json")
 precos = load("precos_referencia.json")
+
+# sanções CEIS/CNEP (Portal da Transparência) — opcional: sem o arquivo, o painel
+# mostra a verificação como não realizada, em vez de "nada consta"
+_arq_sanc = RAW / "sancoes_stf.json"
+_sanc = json.loads(_arq_sanc.read_text(encoding="utf-8")) if _arq_sanc.exists() else {}
+SANCOES = _sanc.get("fornecedores", {})
+SANC_DATA = d(_sanc.get("coletado_em")) if _sanc else None
+
+
+def sancoes_de(ni):
+    v = SANCOES.get(ni)
+    return None if v is None else (v.get("ceis") or []) + (v.get("cnep") or [])
+
+
+def sancao_vigente_em(s, dia):
+    """A sanção estava em vigor no dia? Fim ausente/'Sem informação' = indeterminado."""
+    ini, fim = dbr(s.get("inicio")), dbr(s.get("fim"))
+    return bool(ini and ini <= dia and (fim is None or dia <= fim))
+
+
+def sancao_conhecida_em(s, dia):
+    """A sanção já estava PUBLICADA no dia (logo, consultável antes de contratar)?"""
+    pub = dbr(s.get("publicacao")) or dbr(s.get("inicio"))
+    return bool(pub and pub <= dia)
+
+# valor contratado pelo STF por fornecedor, recalculado sobre contratos únicos
+# (o valor_no_stf gravado no cache da coleta somava as cópias duplicadas)
+VALOR_NO_STF = defaultdict(float)
+for _c in contratos:
+    VALOR_NO_STF[_c.get("niFornecedor")] += _c.get("valorGlobal") or 0
+
 
 # ---------------------------------------------------------------- fornecedores
 def perfil_fornecedor(ni):
@@ -80,9 +137,12 @@ def perfil_fornecedor(ni):
         "municipio": cad.get("municipio"), "uf": cad.get("uf"),
         "vol_nacional": round(vol_nacional, 2), "contratos_nacionais": len(nac),
         "contratos_vigentes": vigentes, "serie_anual": serie,
-        "valor_no_stf": f.get("valor_no_stf"),
+        "valor_no_stf": round(VALOR_NO_STF.get(ni, 0.0), 2),
         "razao_capital_volume": round(capital / vol_nacional, 4) if vol_nacional else None,
         "crescimento_recente": round(cresc, 2) if cresc else None,
+        # None = não consultado; [] = consultado, nada consta
+        "sancoes": sancoes_de(ni),
+        "sancoes_consulta": SANC_DATA.isoformat() if SANC_DATA else None,
     }
 
 
@@ -188,6 +248,18 @@ def classifica(c, desf, perfil):
     if ini and fim and (fim - ini).days > 360:
         add("Vigência superior a 12 meses (serviço continuado)", 0.4, True)
 
+    # -- sanção CEIS/CNEP em vigor E já publicada na data da assinatura: era
+    #    consultável antes de contratar, logo é informação legitimamente ex-ante
+    #    (vale para todos os fornecedores, não só o top-15 com perfil)
+    ass = d(c.get("dataAssinatura")) or ini
+    sancs = sancoes_de(c.get("niFornecedor"))
+    if sancs and ass:
+        vig = [s for s in sancs if sancao_vigente_em(s, ass) and sancao_conhecida_em(s, ass)]
+        if vig:
+            s0 = vig[0]
+            add(f"Sanção vigente na assinatura ({s0['cadastro']}: {s0['tipo']} — {s0['orgao']})",
+                2.0, True)
+
     # -- histórico do próprio contrato: SÓ observado (posterior à assinatura)
     if desf["n_aditivos"] >= 2:
         add(f"{desf['n_aditivos']} termos aditivos já firmados", 0.8, False)
@@ -206,14 +278,10 @@ def classifica(c, desf, perfil):
     return prob_i, prob_ex_i, imp_i, fatores
 
 
-NIVEIS = [(4, "Baixo"), (9, "Moderado"), (16, "Elevado"), (25, "Crítico")]
-
-
 def nivel(prob, imp):
-    s = prob * imp
-    for mx, n in NIVEIS:
-        if s <= mx:
-            return n
+    """Nível oficial da Res. 781/2022 a partir das posições ordinais 1–5
+    (valores 1-2-5-8-10, risco inerente 0–100, faixas 10/40/80)."""
+    return E.nivel(prob, imp)
 
 
 # ------------------------------------------------------------------ montagem
@@ -263,6 +331,9 @@ for c in contratos:
         "forn_nome": c.get("nomeRazaoSocialFornecedor"),
         "prob": prob, "imp": imp, "nivel": nivel(prob, imp),
         "prob_ex": prob_ex, "nivel_ex": nivel(prob_ex, imp),
+        # risco inerente oficial (0–100) = valor da probabilidade × valor do impacto
+        "score": E.pontuacao(prob, imp), "score_ex": E.pontuacao(prob_ex, imp),
+        "sancoes": sancoes_de(c.get("niFornecedor")),
         "fatores": fatores, "desfecho": desf,
         "ml": ml_contratos.get(c.get("numeroControlePNCP")),
     })
@@ -291,7 +362,7 @@ for cod, info in precos.items():
     })
 
 # ------------------------------------------------------------ KPIs e resumo
-ALTOS = ("Elevado", "Crítico")
+ALTOS = E.ALTOS
 n_adversos = sum(1 for p in procs if p["desfecho"]["desfecho_adverso"])
 adversos = [p for p in procs if p["desfecho"]["desfecho_adverso"]]
 # quantos dos contratos que deram errado JÁ apareciam como Elevado/Crítico
@@ -302,6 +373,7 @@ resumo = {
     "coletado_em": HOJE.isoformat(),
     "orgao": "Supremo Tribunal Federal — CNPJ 00.531.640/0001-28",
     "n_contratos": len(procs),
+    "n_registros_pncp": N_REGISTROS_BRUTOS,      # antes da deduplicação
     "valor_total": round(sum(p["valor"] for p in procs), 2),
     "n_aditivos": sum(p["desfecho"]["n_aditivos"] for p in procs),
     "n_rescindidos": sum(1 for p in procs if p["desfecho"]["rescindido"]),
@@ -310,6 +382,13 @@ resumo = {
     "n_altos_ex_ante": n_altos_ex,
     "adversos_sinalizados_ex_ante": adv_sinalizados,
     "pct_adversos_sinalizados_ex_ante": round(100 * adv_sinalizados / max(n_adversos, 1), 1),
+    # sanções: verificação realizada? em quantos contratos havia sanção vigente
+    # e já publicada na data da assinatura?
+    "sancoes_consulta": SANC_DATA.isoformat() if SANC_DATA else None,
+    "fornecedores_verificados": len(SANCOES),
+    "fornecedores_com_registro": sum(1 for v in SANCOES.values() if v.get("ceis") or v.get("cnep")),
+    "contratos_sancao_na_assinatura": sum(
+        1 for p in procs if any(f[0].startswith("Sanção vigente na assinatura") for f in p["fatores"])),
 }
 
 if ml_stf:

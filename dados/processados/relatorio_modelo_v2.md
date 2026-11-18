@@ -20,7 +20,7 @@ Teste 2025: 4065 (2.1% adversos).
 | Gradient Boosting (v2) | 0.109 | 0.494 | 0.179 | 0.139 | 0.806 |
 | — v1 · Regressão Logística | 0.049 | 0.35 | 0.086 | 0.04 | 0.746 |
 | — v1 · Gradient Boosting | 0.064 | 0.393 | 0.111 | 0.071 | 0.798 |
-| — v1 · Baseline heurístico | 0.067 | 0.129 | 0.088 | 0.033 | 0.705 |
+| — v1 · Baseline heurístico | 0.032 | 0.036 | 0.034 | 0.031 | 0.701 |
 
 Prevalência no teste v2 (PR-AUC do acaso): 0.021 ·
 v1: 0.016. **Atenção**: v1 e v2 têm testes e rótulos
