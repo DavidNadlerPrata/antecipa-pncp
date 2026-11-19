@@ -290,15 +290,16 @@ casos. A coluna de desfecho mostra o que de fato ocorreu e é o rótulo com que 
         <p>Escore heurístico transparente que parte de <strong>1,0 ponto</strong> de probabilidade e soma
           apenas fatores <em>conhecidos no dia da assinatura</em>:</p>
         <ul>
-          <li>capital social &lt; 2% do volume contratado nacional: <b>+1,2</b> · &gt; 30%: <b>−0,5</b> ·
+          <li>capital social &lt; 2% do valor do contrato: <b>+1,2</b> · &gt; 30%: <b>−0,5</b> ·
             não informado: <b>+0,3</b></li>
-          <li>CNPJ com menos de 3 anos: <b>+0,8</b> · mais de 10 anos: <b>−0,4</b></li>
-          <li>crescimento contratual atípico (≥ 3× a mediana histórica no PNCP): <b>+1,0</b></li>
+          <li>CNPJ com menos de 3 anos na assinatura: <b>+0,8</b> · mais de 10 anos: <b>−0,4</b></li>
+          <li>crescimento contratual atípico (≥ 3× a mediana histórica no PNCP; só os 15 maiores
+            fornecedores): <b>+1,0</b></li>
           <li>situação cadastral na Receita diferente de “Ativa”: <b>+1,5</b></li>
           <li>vigência prevista superior a 12 meses: <b>+0,4</b></li>
           <li>sanção CEIS/CNEP em vigor <em>e já publicada</em> na data da assinatura: <b>+2,0</b></li>
         </ul>
-        <p>O total é arredondado e limitado a 1–5, que indica o nível da norma: Muito baixa (1) ·
+        <p>O total é arredondado (0,5 para cima) e limitado a 1–5, que indica o nível da norma: Muito baixa (1) ·
           Baixa (2) · Média (5) · Alta (8) · Muito alta (10).</p>
       </div>
       <div>

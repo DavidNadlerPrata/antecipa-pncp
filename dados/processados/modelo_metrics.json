@@ -26,8 +26,8 @@
    "recall": 0.036,
    "f1": 0.034,
    "pr_auc": 0.031,
-   "roc_auc": 0.701,
-   "alertas": 154,
+   "roc_auc": 0.703,
+   "alertas": 156,
    "positivos_teste": 140
   },
   "_prevalencia_teste": 0.016

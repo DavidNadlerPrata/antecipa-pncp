@@ -19,6 +19,20 @@ sobre nenhuma empresa.
 > seção 5.4; os resultados formais do modelo (5.1–5.3) não mudam, pois usavam o
 > dataset multi-órgão, já deduplicado. A escala oficial está centralizada em
 > [`pipeline/escala_781.py`](pipeline/escala_781.py).
+>
+> **Correções de 19/11/2026.** (4) **Arredondamento**: a conversão de pontos em
+> nível usava o `round()` do Python, que leva 0,5 ao par mais próximo (2,5 → 2),
+> contrariando a regra documentada. Agora 0,5 arredonda para cima, como no
+> Excel. (5) **Cobertura dos fatores de fornecedor**: capital, idade e situação
+> cadastral eram avaliados só para os 15 maiores fornecedores (18 contratos); os
+> demais recebiam um fator técnico de "perfil não coletado" (+0,3). Como o
+> cadastro da Receita já havia sido coletado para todos, os fatores passaram a
+> valer para 291 dos 293 contratos, com as mesmas regras do baseline avaliado na
+> seção 5.1 (capital comparado ao valor do contrato; idade do CNPJ na data da
+> assinatura), e o fator técnico foi retirado. Efeito combinado: a leitura
+> ex-ante passou de 0 — como dizia a versão de 18/11 — para **2** alertas
+> Elevado, nenhum com desfecho adverso. Os pesos estão centralizados em
+> `escala_781.PESOS`.
 
 ---
 
@@ -66,12 +80,15 @@ Cada contrato é apresentado sob três leituras, que respondem a perguntas
 diferentes. Duas são *ex-ante*; uma é retrospectiva.
 
 **(a) Nível ex-ante — Res. 781/2022.** Escore heurístico que parte de 1,0 ponto e
-soma apenas fatores conhecidos na assinatura: capital social < 2 % do volume
-contratado nacional `+1,2` (> 30 % `−0,5`; não informado `+0,3`); CNPJ < 3 anos
-`+0,8` (> 10 anos `−0,4`); crescimento contratual atípico ≥ 3× a mediana no PNCP
-`+1,0`; situação cadastral ≠ "Ativa" `+1,5`; vigência > 12 meses `+0,4`; **sanção
+soma apenas fatores conhecidos na assinatura, com base no cadastro aberto da
+Receita de cada fornecedor: capital social < 2 % do valor do contrato `+1,2`
+(> 30 % `−0,5`; não informado `+0,3`); CNPJ com menos de 3 anos na data da
+assinatura `+0,8` (mais de 10 anos `−0,4`); crescimento contratual atípico ≥ 3× a
+mediana no PNCP `+1,0` (série disponível só para os 15 maiores fornecedores);
+situação cadastral ≠ "Ativa" `+1,5`; vigência > 12 meses `+0,4`; **sanção
 CEIS/CNEP em vigor e já publicada na data da assinatura `+2,0`**. O total,
-arredondado e limitado a 1–5, indica o nível de probabilidade da norma.
+arredondado (0,5 para cima) e limitado a 1–5, indica o nível de probabilidade da
+norma.
 
 **(b) Probabilidade prevista — modelo supervisionado.** Gradient Boosting com
 calibração isotônica (5 folds). Treino: 16.783 contratos de 11 órgãos
@@ -112,9 +129,9 @@ com alerta = Elevado ou Crítico na escala oficial (risco inerente ≥ 40).
 | **Gradient Boosting v2 (12 meses)** | 0,109 | 0,494 | 0,179 | **0,139** (lift 6,6×) | 0,806 |
 | Regressão Logística v2 | 0,052 | 0,647 | 0,096 | 0,065 | 0,755 |
 | Gradient Boosting v1 | 0,064 | 0,393 | 0,111 | 0,071 (lift 4,4×) | 0,798 |
-| Baseline heurístico (Res. 781, escala oficial) | 0,032 | 0,036 | 0,034 | 0,031 (lift ~1,9×) | 0,701 |
+| Baseline heurístico (Res. 781, escala oficial) | 0,032 | 0,036 | 0,034 | 0,031 (lift ~1,9×) | 0,703 |
 
-Na escala oficial o baseline emite 154 alertas no teste de 2025 e acerta 5 dos
+Na escala oficial o baseline emite 156 alertas no teste de 2025 e acerta 5 dos
 140 desfechos adversos. Visão operacional do modelo: entre os 100 contratos de 2025
 com maior escore v2, **16 tiveram desfecho adverso real** em 12 meses — 7,6× a
 taxa base — capturando 19 % de todos os adversos do ano.
@@ -128,7 +145,7 @@ Mesmo teste (contratos do STF assinados em 2025: 106 contratos, 13 adversos). O
 modelo só-STF (148 contratos de treino) obteve PR-AUC 0,384; o multi-órgão
 (12.483 contratos), 0,319. **Bootstrap com 4.000 reamostras: Δ = +0,069, IC 95 %
 [−0,221; +0,350]** — diferença não conclusiva. No mesmo teste, o baseline na
-escala oficial emite 2 alertas e não acerta nenhum.
+escala oficial emite 3 alertas e não acerta nenhum.
 
 Leitura equilibrada: o padrão local do STF carrega sinal específico relevante (sua
 carteira tem prevalência de desfecho adverso muito superior à dos demais órgãos),
@@ -160,43 +177,49 @@ interpretável sem alterar a capacidade de discriminar.
 
 Reproduzir: `python pipeline/diagrama_calibracao.py`.
 
-### 5.4 Na escala oficial, a matriz ex-ante não emite alerta na carteira do STF
+### 5.4 Na escala oficial, a matriz ex-ante emite só dois alertas — e erra ambos
 
 Critérios de alerta aplicados aos 293 contratos do STF (taxa base de desfecho
 adverso: **21,2 %**):
 
 | Critério de alerta | Alertas | Acertos | Precisão | Recall | Lift |
 |---|---|---|---|---|---|
-| **Ex-ante (Res. 781) — Elevado/Crítico** | **0** | 0 | — | 0,0 % | — |
-| Ex-ante (Res. 781) — Moderado ou acima | 158 | 32 | 20,2 % | 51,6 % | 0,96× |
-| Ex-ante top-50 (ordenado pelo escore) | 50 | 9 | 18,0 % | 14,5 % | 0,85× |
+| **Ex-ante (Res. 781) — Elevado/Crítico** | **2** | 0 | 0,0 % | 0,0 % | 0,00× |
+| Ex-ante (Res. 781) — Moderado ou acima | 72 | 14 | 19,4 % | 22,6 % | 0,92× |
+| Ex-ante top-50 (ordenado pelo escore) | 50 | 11 | 22,0 % | 17,7 % | 1,04× |
 | **ML top-50 (probabilidade)** | 50 | 27 | **54,0 %** | 43,5 % | **2,55×** |
-| Ex-ante top-100 | 100 | 19 | 19,0 % | 30,6 % | 0,90× |
+| Ex-ante top-100 | 100 | 21 | 21,0 % | 33,9 % | 0,99× |
 | ML top-100 | 100 | 49 | 49,0 % | 79,0 % | 2,32× |
 | ML ≥ 20 % | 82 | 45 | 54,9 % | 72,6 % | 2,59× |
 | ML ≥ 10 % | 128 | 51 | 39,8 % | 82,3 % | 1,88× |
 | ML ≥ 5 % | 184 | 56 | 30,4 % | 90,3 % | 1,44× |
-| *(referência, circular)* Observado — Elevado/Crítico | 20 | 17 | 85,0 % | 27,4 % | 4,02× |
+| *(referência, circular)* Observado — Elevado/Crítico | 19 | 15 | 79,0 % | 24,2 % | 3,73× |
 
-**Na escala oficial, a leitura ex-ante não classifica nenhum contrato como Elevado
-ou Crítico.** Com os fatores disponíveis antes da assinatura, a probabilidade
-ex-ante de todos os 293 contratos fica em Muito baixa (1) ou Baixa (2); mesmo com
-impacto máximo (10), o risco inerente chega no máximo a 20 — Moderado. Na matriz
-do painel, todos os contratos ocupam apenas as duas primeiras colunas. Relaxando o
-critério para "Moderado ou acima", a precisão (20,2 %) fica **abaixo da taxa
-base** (lift 0,96×); ordenando pelo escore contínuo, os 50 primeiros contêm 9
-desfechos adversos — enquanto os 50 primeiros do modelo contêm **27, três vezes
-mais**.
+**Na escala oficial, a leitura ex-ante classifica apenas dois contratos como
+Elevado — e nenhum deles teve desfecho adverso.** Com os fatores disponíveis
+antes da assinatura, a probabilidade ex-ante de 291 dos 293 contratos fica em
+Muito baixa (1) ou Baixa (2); mesmo com impacto máximo (10), o risco inerente
+desses chega no máximo a 20 — Moderado. As exceções somam 2,5 e 2,6 pontos, que
+arredondam para Média (5): o maior contrato da carteira (consórcio de facilities,
+R$ 587 milhões — capital não informado, empresa recente e vigência longa), com
+impacto 10 e risco 50; e um contrato de R$ 350 mil cujo fornecedor tem capital
+abaixo de 2 % do valor contratado, com impacto 8 e risco 40. Na matriz do painel,
+todos os demais contratos ocupam apenas as duas primeiras colunas. Relaxando o
+critério para "Moderado ou acima", a precisão (19,4 %) fica **abaixo da taxa
+base** (lift 0,92×); ordenando pelo escore contínuo, os 50 primeiros contêm 11
+desfechos adversos — enquanto os 50 primeiros do modelo contêm **27, cerca de
+2,5 vezes mais**.
 
 Ressalvas: (i) os números do ML aqui são **otimistas** — contratos do STF
 integraram o treino; a medição fora da amostra é a da seção 5.1; (ii) o rótulo
 aqui é o mais frouxo ("adverso a qualquer momento"), então **lift** é a coluna
-comparável entre contextos; (iii) o "zero alertas" resulta da escala oficial
-**combinada com a nossa tabela de pontos** — se a validação com o STF elevar os
-pesos, o número muda; (iv) a carteira do STF é homogeneamente de alto risco pelos
-critérios da norma (serviço continuado, longo, de valor elevado), o que satura as
-variáveis discriminantes; (v) a leitura observada tem precisão alta justamente por
-ser circular — usa o desfecho que pretende sinalizar.
+comparável entre contextos; (iii) o "quase nenhum alerta" resulta da escala
+oficial **combinada com a nossa tabela de pontos** — se a validação com o STF
+alterar os pesos, o número muda (a planilha de validação traz um simulador para
+isso); (iv) a carteira do STF é homogeneamente de alto risco pelos critérios da
+norma (serviço continuado, longo, de valor elevado), o que satura as variáveis
+discriminantes; (v) a leitura observada tem precisão alta justamente por ser
+circular — usa o desfecho que pretende sinalizar.
 
 Reproduzir: `python pipeline/metricas_carteira_stf.py` →
 [`metricas_carteira_stf.md`](dados/processados/metricas_carteira_stf.md).

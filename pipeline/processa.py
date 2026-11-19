@@ -69,6 +69,10 @@ termos = load("termos_stf.json")
 fornecedores = load("fornecedores.json")
 itens_stf = load("itens_stf.json")
 precos = load("precos_referencia.json")
+# cadastro aberto da Receita (capital, abertura, situação) de TODOS os
+# fornecedores — base dos fatores F1–F5 e F7 do escore heurístico
+_arq_cad = RAW / "cadastros.json"
+CADASTROS = json.loads(_arq_cad.read_text(encoding="utf-8")) if _arq_cad.exists() else {}
 
 # sanções CEIS/CNEP (Portal da Transparência) — opcional: sem o arquivo, o painel
 # mostra a verificação como não realizada, em vez de "nada consta"
@@ -208,73 +212,82 @@ def classifica(c, desf, perfil):
                  para gestão de contratos vigentes.
 
     Cada fator é marcado com ex_ante=True/False para que o painel possa
-    distinguir as duas leituras.
+    distinguir as duas leituras, e com o identificador (F1…F10, O1…O3) da
+    tabela de pontos em escala_781.PESOS — o mesmo da planilha de validação.
     """
-    fatores = []  # [texto, contribuição, ex_ante]
-    prob = 1.0      # observado (todos os fatores)
-    prob_ex = 1.0   # ex-ante (só fatores conhecidos na assinatura)
+    P = E.PESOS
+    fatores = []  # [texto, contribuição, ex_ante, id]
+    prob = E.BASE_PONTOS      # observado (todos os fatores)
+    prob_ex = E.BASE_PONTOS   # ex-ante (só fatores conhecidos na assinatura)
 
-    def add(texto, pts, ex_ante):
+    def add(fid, texto, ex_ante):
         nonlocal prob, prob_ex
-        fatores.append([texto, pts, ex_ante])
+        pts = P[fid]
+        fatores.append([texto, pts, ex_ante, fid])
         prob += pts
         if ex_ante:
             prob_ex += pts
 
-    # -- fornecedor (tudo conhecido na assinatura)
-    if perfil:
-        r = perfil.get("razao_capital_volume")
-        if not perfil.get("capital_social"):
-            add("Capital social não informado na base aberta da Receita (comum em consórcios) — verificar", 0.3, True)
-        elif r is not None and r < 0.02:
-            add(f"Capital social (R$ {perfil['capital_social']:,.0f}) muito inferior ao volume contratado nacional (R$ {perfil['vol_nacional']:,.0f})".replace(",", "."), 1.2, True)
-        elif r is not None and r > 0.3:
-            add("Capital social compatível com o volume contratado", -0.5, True)
-        idade = perfil.get("idade_anos")
-        if idade is not None and idade < 3:
-            add(f"Empresa recente ({idade:.1f} ano(s) de CNPJ)", 0.8, True)
-        elif idade is not None and idade > 10:
-            add(f"Empresa consolidada ({idade:.0f} anos de CNPJ)", -0.4, True)
-        cresc = perfil.get("crescimento_recente")
-        if cresc is not None and cresc >= 3:
-            add(f"Crescimento contratual atípico ({cresc:.1f}× a mediana histórica no PNCP)", 1.0, True)
-        if perfil.get("situacao") and perfil["situacao"].upper() != "ATIVA":
-            add(f"Situação cadastral na Receita: {perfil['situacao']}", 1.5, True)
-    else:
-        add("Fornecedor fora do top-15 monitorado (perfil nacional não coletado)", 0.3, True)
+    # -- fornecedor, pelo cadastro aberto da Receita (todos os fornecedores).
+    #    Mesmas regras do baseline avaliado em treina_modelo.py: capital social
+    #    comparado ao VALOR DO CONTRATO e idade do CNPJ NA DATA DA ASSINATURA.
+    ini, fim = d(c.get("dataVigenciaInicio")), d(c.get("dataVigenciaFim"))
+    ass = d(c.get("dataAssinatura")) or ini
+    cad = CADASTROS.get(c.get("niFornecedor")) or {}
+    valor = c.get("valorGlobal") or 0
+    if cad:
+        cap = cad.get("capital_social")
+        if not cap:
+            add("F3", "Capital social não informado na base aberta da Receita (comum em consórcios) — verificar", True)
+        elif valor and cap / valor < 0.02:
+            add("F1", f"Capital social (R$ {cap:,.0f}) inferior a 2% do valor do contrato (R$ {valor:,.0f})".replace(",", "."), True)
+        elif valor and cap / valor > 0.3:
+            add("F2", "Capital social superior a 30% do valor do contrato", True)
+        abertura = d(cad.get("abertura"))
+        if abertura and ass:
+            idade = (ass - abertura).days / 365.25
+            if idade < 3:
+                add("F4", f"Empresa recente ({idade:.1f} ano(s) de CNPJ na assinatura)", True)
+            elif idade > 10:
+                add("F5", f"Empresa consolidada ({idade:.0f} anos de CNPJ na assinatura)", True)
+        if (cad.get("situacao") or "").upper() not in ("", "ATIVA"):
+            add("F7", f"Situação cadastral na Receita: {cad['situacao']}", True)
+    # crescimento atípico exige a série nacional de contratos, coletada só para
+    # os 15 maiores fornecedores (perfil)
+    cresc = (perfil or {}).get("crescimento_recente")
+    if cresc is not None and cresc >= 3:
+        add("F6", f"Crescimento contratual atípico ({cresc:.1f}× a mediana histórica no PNCP)", True)
 
     # -- duração prevista (conhecida na assinatura)
-    ini, fim = d(c.get("dataVigenciaInicio")), d(c.get("dataVigenciaFim"))
     if ini and fim and (fim - ini).days > 360:
-        add("Vigência superior a 12 meses (serviço continuado)", 0.4, True)
+        add("F8", "Vigência superior a 12 meses (serviço continuado)", True)
 
     # -- sanção CEIS/CNEP em vigor E já publicada na data da assinatura: era
     #    consultável antes de contratar, logo é informação legitimamente ex-ante
     #    (vale para todos os fornecedores, não só o top-15 com perfil)
-    ass = d(c.get("dataAssinatura")) or ini
     sancs = sancoes_de(c.get("niFornecedor"))
     if sancs and ass:
         vig = [s for s in sancs if sancao_vigente_em(s, ass) and sancao_conhecida_em(s, ass)]
         if vig:
             s0 = vig[0]
-            add(f"Sanção vigente na assinatura ({s0['cadastro']}: {s0['tipo']} — {s0['orgao']})",
-                2.0, True)
+            add("F9", f"Sanção vigente na assinatura ({s0['cadastro']}: {s0['tipo']} — {s0['orgao']})",
+                True)
 
     # -- histórico do próprio contrato: SÓ observado (posterior à assinatura)
     if desf["n_aditivos"] >= 2:
-        add(f"{desf['n_aditivos']} termos aditivos já firmados", 0.8, False)
+        add("O1", f"{desf['n_aditivos']} termos aditivos já firmados", False)
     if desf["acrescimo_valor_pct"] > 0.10:
-        add(f"Valor acumulado {desf['acrescimo_valor_pct']*100:.0f}% acima do inicial", 0.8, False)
+        add("O2", f"Valor acumulado {desf['acrescimo_valor_pct']*100:.0f}% acima do inicial", False)
     if desf["rescindido"]:
-        add("Contrato com termo de rescisão/extinção registrado", 1.5, False)
+        add("O3", "Contrato com termo de rescisão/extinção registrado", False)
 
-    prob_i = max(1, min(5, round(prob)))
-    prob_ex_i = max(1, min(5, round(prob_ex)))
+    prob_i = E.posicao_probabilidade(prob)        # 0,5 arredonda para cima
+    prob_ex_i = E.posicao_probabilidade(prob_ex)
     # -- impacto: quantil do valor na carteira do STF (conhecido na assinatura)
     q = quantil(c.get("valorGlobal") or 0)
     imp_i = 1 + int(q * 4.999) if q < 1 else 5
     imp_i = max(1, min(5, imp_i))
-    fatores.append([f"Impacto orçamentário: valor no percentil {q*100:.0f} da carteira STF", None, True])
+    fatores.append([f"Impacto orçamentário: valor no percentil {q*100:.0f} da carteira STF", None, True, "IMP"])
     return prob_i, prob_ex_i, imp_i, fatores
 
 

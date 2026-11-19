@@ -20,7 +20,7 @@ histórico de um único órgão pode ser insuficiente para treinar sem overfitti
 | Só STF · Gradient Boosting | 0.136 | 0.846 | 0.234 | 0.384 | 0.712 | 81 |
 | Multi-órgão · Regressão Logística | 0.148 | 0.923 | 0.255 | 0.122 | 0.5 | 81 |
 | Multi-órgão · Gradient Boosting | 0.154 | 0.615 | 0.246 | 0.319 | 0.644 | 52 |
-| Baseline heurístico (Res. 781, Elevado/Crítico) | 0.0 | 0.0 | 0.0 | 0.125 | 0.478 | 2 |
+| Baseline heurístico (Res. 781, Elevado/Crítico) | 0.0 | 0.0 | 0.0 | 0.125 | 0.478 | 3 |
 
 Prevalência no teste (PR-AUC de um classificador aleatório):
 0.123. O baseline usa a escala oficial da Res. STF

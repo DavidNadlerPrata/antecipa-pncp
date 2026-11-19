@@ -29,6 +29,12 @@ Histórico de versões:
   `pipeline/escala_781.py`; **carteira do STF deduplicada** (365 registros → 293
   contratos); **sanções CEIS/CNEP** integradas via API do Portal da
   Transparência. Detalhes no topo do [RESULTADOS.md](RESULTADOS.md).
+- **19/11/2026** — arredondamento dos pontos corrigido para "0,5 para cima"
+  (antes, `round()` do Python levava 2,5 a 2); fatores de fornecedor (capital,
+  idade, situação) passaram a usar o cadastro da Receita de **todos** os
+  fornecedores — antes só os 15 maiores —, com as mesmas regras do baseline
+  formal; tabela de pontos centralizada em `escala_781.PESOS`. A leitura ex-ante
+  passou de 0 para 2 alertas Elevado na carteira do STF (nenhum acerto).
 
 ## O que é real nesta versão
 
@@ -71,7 +77,7 @@ termina, e o pipeline usa o cache público já versionado
 | Gradient Boosting v2 | 0,109 | 0,494 | 0,179 | **0,139** (lift 6,6×) | 0,806 |
 | Regressão Logística v2 | 0,052 | 0,647 | 0,096 | 0,065 | 0,755 |
 | v1 · Gradient Boosting | 0,064 | 0,393 | 0,111 | 0,071 (lift 4,4×) | 0,798 |
-| v1 · Baseline heurístico (Res. 781, escala oficial) | 0,032 | 0,036 | 0,034 | 0,031 | 0,701 |
+| v1 · Baseline heurístico (Res. 781, escala oficial) | 0,032 | 0,036 | 0,034 | 0,031 | 0,703 |
 
   Visão operacional (fila de diligência): entre os 100 contratos de 2025 com
   maior escore, 16 tiveram desfecho adverso real (7,6× a taxa base).

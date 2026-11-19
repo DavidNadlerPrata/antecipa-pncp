@@ -130,10 +130,23 @@ bullet([("Carteira do STF deduplicada. ", True),
 bullet([("Sanções CEIS/CNEP integradas. ", True),
         ("Os 232 fornecedores do STF foram consultados pela API oficial; a sanção vigente na data da "
          "assinatura passou a compor o escore ex-ante (seção 4.6).", False)])
-p("As correções mudam a forma do achado da seção 4.4: onde antes se lia “a matriz ex-ante não "
-  "discrimina (lift 1,01×)”, lê-se agora que, na escala oficial, a matriz ex-ante não emite nenhum "
-  "alerta Elevado ou Crítico. Os resultados formais do modelo supervisionado (seções 4.1 a 4.3) não "
-  "mudam, pois usavam o dataset multi-órgão, já deduplicado.")
+bullet([("Arredondamento corrigido. ", True),
+        ("A conversão de pontos em nível usava uma função que arredonda 0,5 para o número par mais "
+         "próximo (2,5 virava 2), contrariando a regra documentada. Agora 0,5 arredonda para cima, como no "
+         "Excel.", False)])
+bullet([("Fatores de fornecedor para todos. ", True),
+        ("Capital social, idade e situação cadastral eram avaliados só para os 15 maiores fornecedores "
+         "(18 contratos); os demais recebiam apenas um fator técnico de “perfil não coletado”. Como o "
+         "cadastro da Receita já tinha sido coletado para todos, esses fatores passaram a valer para 291 "
+         "dos 293 contratos, com as mesmas regras do baseline avaliado na seção 4.1 (capital comparado ao "
+         "valor do contrato; idade da empresa na data da assinatura), e o fator técnico foi retirado.",
+         False)])
+p("Atenção: a mensagem enviada em 18/11 informava que a matriz ex-ante não classificava nenhum contrato "
+  "como Elevado ou Crítico. Com as duas correções de 19/11, ela classifica dois — e nenhum deles teve "
+  "desfecho adverso. O achado da seção 4.4 muda de forma, mas não de sentido: onde antes se lia “a matriz "
+  "ex-ante não discrimina (lift 1,01×)”, lê-se agora que, na escala oficial, a matriz ex-ante emite só "
+  "dois alertas Elevado e erra ambos. Os resultados formais do modelo supervisionado (seções 4.1 a 4.3) "
+  "não mudam, pois usavam o dataset multi-órgão, já deduplicado.")
 
 # ------------------------------------------------------- sumário executivo
 doc.add_heading("Sumário executivo", level=1)
@@ -152,10 +165,11 @@ p("Resultado central: o Gradient Boosting v2 atinge PR-AUC de 0,139 (6,6 vezes o
   "regras — e responde diretamente às fragilidades 2.1, 2.2 e 2.7 da análise crítica. Todo o pipeline é "
   "reprodutível em ~5 minutos no Google Colab, sem credenciais, a partir do repositório público no GitHub.")
 p("Achado complementar, e possivelmente o mais contundente para a defesa (seção 4.4): na escala oficial "
-  "da Res. 781/2022, alimentada apenas com dados anteriores à assinatura, a matriz de riscos não "
-  "classifica nenhum dos 293 contratos do STF como Elevado ou Crítico. Relaxado o critério para "
-  "“Moderado ou acima”, sua precisão fica abaixo da taxa base. Ordenados os contratos, os 50 primeiros do "
-  "modelo supervisionado contêm três vezes mais desfechos adversos que os 50 primeiros da régua normativa. "
+  "da Res. 781/2022, alimentada apenas com dados anteriores à assinatura, a matriz de riscos classifica "
+  "apenas dois dos 293 contratos do STF como Elevado — e nenhum deles teve desfecho adverso. Relaxado o "
+  "critério para “Moderado ou acima”, sua precisão fica abaixo da taxa base. Ordenados os contratos, os 50 "
+  "primeiros do modelo supervisionado contêm cerca de duas vezes e meia mais desfechos adversos que os 50 "
+  "primeiros da régua normativa. "
   "A automatização das regras, isoladamente, não entrega capacidade preditiva; é o aprendizado a partir "
   "dos desfechos reais que a produz.")
 
@@ -248,16 +262,17 @@ p("O painel apresenta cada contrato sob três leituras distintas, que respondem 
 
 p("(a) Nível ex-ante — Res. 781/2022. ", bold=True)
 p("Escore heurístico transparente que parte de 1,0 ponto de probabilidade e soma apenas fatores "
-  "conhecidos na assinatura:")
-bullet("capital social inferior a 2% do volume contratado nacional: +1,2; superior a 30%: −0,5; "
-       "não informado na base aberta (comum em consórcios): +0,3")
-bullet("CNPJ com menos de 3 anos: +0,8; com mais de 10 anos: −0,4")
-bullet("crescimento contratual atípico (3 ou mais vezes a mediana histórica no PNCP): +1,0")
+  "conhecidos na assinatura, com base no cadastro aberto da Receita de cada fornecedor:")
+bullet("capital social inferior a 2% do valor do contrato: +1,2; superior a 30%: −0,5; não informado na "
+       "base aberta (comum em consórcios): +0,3")
+bullet("CNPJ com menos de 3 anos na data da assinatura: +0,8; com mais de 10 anos: −0,4")
+bullet("crescimento contratual atípico (3 ou mais vezes a mediana histórica no PNCP): +1,0 — avaliado só "
+       "para os 15 maiores fornecedores, os únicos com série nacional coletada")
 bullet("situação cadastral na Receita diferente de “Ativa”: +1,5")
 bullet("vigência prevista superior a 12 meses (serviço continuado): +0,4")
 bullet("sanção no CEIS ou no CNEP em vigor e já publicada na data da assinatura — portanto consultável "
        "antes de contratar: +2,0")
-p("O total é arredondado e limitado a 1–5, posição que indica o nível de probabilidade da norma: Muito "
+p("O total é arredondado (0,5 para cima) e limitado a 1–5, posição que indica o nível de probabilidade da norma: Muito "
   "baixa (1), Baixa (2), Média (5), Alta (8) ou Muito alta (10).")
 
 p("(b) Probabilidade prevista na assinatura — modelo supervisionado. ", bold=True)
@@ -309,13 +324,13 @@ tabela(
         ["Gradient Boosting v2 (12 meses)", "0,109", "0,494", "0,179", "0,139 (lift 6,6×)", "0,806"],
         ["Regressão Logística v2", "0,052", "0,647", "0,096", "0,065", "0,755"],
         ["Gradient Boosting v1", "0,064", "0,393", "0,111", "0,071 (lift 4,4×)", "0,798"],
-        ["Baseline heurístico (Res. 781, escala oficial)", "0,032", "0,036", "0,034", "0,031 (lift ~1,9×)", "0,701"],
+        ["Baseline heurístico (Res. 781, escala oficial)", "0,032", "0,036", "0,034", "0,031 (lift ~1,9×)", "0,703"],
     ],
     [5.2, 2.2, 2.0, 1.8, 3.2, 2.1])
 p("Leitura: o modelo aprende sinal real que as regras não capturam. O baseline foi avaliado no mesmo "
   "teste e com o mesmo rótulo do Gradient Boosting v1; contra ele, o modelo tem o dobro da precisão (0,064 "
   "contra 0,032) e encontra cerca de onze vezes mais desfechos adversos (recall de 0,393 contra 0,036) — "
-  "na escala oficial, a régua normativa emite 154 alertas e acerta 5 dos 140 casos. A v2 domina a v1 em "
+  "na escala oficial, a régua normativa emite 156 alertas e acerta 5 dos 140 casos. A v2 domina a v1 em "
   "todas as métricas "
   "relevantes (a comparação correta entre versões é pelo lift sobre o acaso, pois testes e rótulos "
   "diferem). Em visão operacional de fila de diligência: entre os 100 contratos de 2025 com maior escore "
@@ -373,8 +388,8 @@ p("As explicações por contrato usam valores SHAP calculados sobre o próprio G
   "(fragilidade 2.8). A seção seguinte documenta a evidência que levou a substituir a abordagem "
   "anteriormente adotada.")
 
-doc.add_heading("4.4 Aplicação à carteira do STF: na escala oficial, a matriz ex-ante não emite alerta",
-                level=2)
+doc.add_heading("4.4 Aplicação à carteira do STF: na escala oficial, a matriz ex-ante emite só dois "
+                "alertas — e erra ambos", level=2)
 p("Aplicando os critérios de alerta aos 293 contratos únicos do STF publicados no PNCP (taxa base de "
   "desfecho adverso: 21,2%), obtém-se o resultado abaixo. O escore ex-ante é o mesmo escore heurístico "
   "da Res. 781/2022, na escala oficial da norma, porém calculado apenas com os fatores conhecidos no dia "
@@ -382,25 +397,29 @@ p("Aplicando os critérios de alerta aos 293 contratos únicos do STF publicados
 tabela(
     ["Critério de alerta", "Alertas", "Acertos", "Precisão", "Recall", "Lift"],
     [
-        ["Ex-ante (Res. 781) — Elevado/Crítico", "0", "0", "—", "0,0%", "—"],
-        ["Ex-ante (Res. 781) — Moderado ou acima", "158", "32", "20,2%", "51,6%", "0,96×"],
-        ["Ex-ante top-50 (ordenado pelo escore)", "50", "9", "18,0%", "14,5%", "0,85×"],
+        ["Ex-ante (Res. 781) — Elevado/Crítico", "2", "0", "0,0%", "0,0%", "0,00×"],
+        ["Ex-ante (Res. 781) — Moderado ou acima", "72", "14", "19,4%", "22,6%", "0,92×"],
+        ["Ex-ante top-50 (ordenado pelo escore)", "50", "11", "22,0%", "17,7%", "1,04×"],
         ["ML top-50 (probabilidade)", "50", "27", "54,0%", "43,5%", "2,55×"],
-        ["Ex-ante top-100", "100", "19", "19,0%", "30,6%", "0,90×"],
+        ["Ex-ante top-100", "100", "21", "21,0%", "33,9%", "0,99×"],
         ["ML top-100", "100", "49", "49,0%", "79,0%", "2,32×"],
         ["ML ≥ 20%", "82", "45", "54,9%", "72,6%", "2,59×"],
         ["ML ≥ 10%", "128", "51", "39,8%", "82,3%", "1,88×"],
-        ["(referência, circular) Observado — Elevado/Crítico", "20", "17", "85,0%", "27,4%", "4,02×"],
+        ["(referência, circular) Observado — Elevado/Crítico", "19", "15", "79,0%", "24,2%", "3,73×"],
     ],
     [6.4, 1.7, 1.7, 1.7, 1.6, 1.6])
-p("O achado central: na escala oficial, a leitura ex-ante não classifica nenhum contrato como Elevado ou "
-  "Crítico. Com os fatores disponíveis antes da assinatura, a probabilidade ex-ante de todos os 293 "
-  "contratos fica em Muito baixa (1) ou Baixa (2); mesmo com impacto máximo (10), o risco inerente chega "
-  "no máximo a 20 — Moderado. Na matriz de riscos ex-ante do painel, todos os contratos ocupam apenas as "
-  "duas primeiras colunas de probabilidade. Relaxando o critério para “Moderado ou acima”, a precisão "
-  "(20,2%) fica abaixo da própria taxa base. E, ordenados os contratos pelo escore contínuo, os 50 "
-  "primeiros da régua normativa contêm 9 desfechos adversos, contra 27 entre os 50 primeiros do modelo — "
-  "três vezes mais, no mesmo custo operacional.")
+p("O achado central: na escala oficial, a leitura ex-ante classifica apenas dois contratos como Elevado — "
+  "e nenhum deles teve desfecho adverso. Com os fatores disponíveis antes da assinatura, a probabilidade "
+  "ex-ante de 291 dos 293 contratos fica em Muito baixa (1) ou Baixa (2); mesmo com impacto máximo (10), o "
+  "risco inerente desses chega no máximo a 20 — Moderado. As duas exceções somam 2,5 e 2,6 pontos, que "
+  "arredondam para Média (5). Uma é o maior contrato da carteira (consórcio de facilities, R$ 587 "
+  "milhões): capital não informado, empresa recente e vigência longa; com impacto 10, o risco chega a 50. "
+  "A outra é um contrato de R$ 350 mil cujo fornecedor tem capital abaixo de 2% do valor contratado; com "
+  "impacto 8, o risco chega a 40. Na matriz de riscos ex-ante do painel, todos os demais contratos ocupam "
+  "apenas as duas primeiras colunas de probabilidade. Relaxando o critério para “Moderado ou acima”, a "
+  "precisão (19,4%) fica abaixo da própria taxa base. E, ordenados os contratos pelo escore contínuo, os 50 "
+  "primeiros da régua normativa contêm 11 desfechos adversos, contra 27 entre os 50 primeiros do modelo — "
+  "cerca de duas vezes e meia mais, no mesmo custo operacional.")
 p("Ressalvas indispensáveis para a leitura correta desta tabela:", bold=True)
 bullet([("Viés in-sample nos números do ML. ", True),
         ("Os contratos do STF integraram o treino do modelo calibrado (2022–2025, 11 órgãos), de modo "
@@ -417,13 +436,14 @@ bullet([("Por que a heurística falha justamente no STF. ", True),
          "serviço continuado, longo e de valor elevado. As variáveis que a heurística usa para "
          "discriminar (quantil de valor, vigência superior a 12 meses) estão saturadas — se todos "
          "pontuam, ninguém se destaca.", False)])
-bullet([("O “zero alertas” depende da tabela de pontos. ", True),
+bullet([("O “quase nenhum alerta” depende da tabela de pontos. ", True),
         ("O resultado combina a escala oficial com a operacionalização própria da seção 3.4, que "
          "concentra a probabilidade ex-ante em 1 e 2 porque os fatores disponíveis antes da assinatura são "
-         "poucos e de peso moderado. Se a validação com os gestores do STF elevar os pesos, o número de "
-         "alertas mudará — o que torna essa validação parte do resultado, e não mero detalhe.", False)])
+         "poucos e de peso moderado. Se a validação com os gestores do STF alterar os pesos, o número de "
+         "alertas mudará — o que torna essa validação parte do resultado, e não mero detalhe. A planilha "
+         "de validação inclui um simulador que mostra esse efeito.", False)])
 bullet([("A leitura observada é circular. ", True),
-        ("Sua precisão de 85% decorre de usar o próprio desfecho que pretende sinalizar; aparece na tabela "
+        ("Sua precisão de 71% decorre de usar o próprio desfecho que pretende sinalizar; aparece na tabela "
          "apenas como referência.", False)])
 p("Este é, na avaliação técnica deste relatório, o resultado mais forte do trabalho para a defesa: "
   "operacionalizar a matriz da Res. 781/2022 com dados anteriores à assinatura não produz capacidade "
@@ -606,12 +626,12 @@ p("Os anexos da Resolução — escalas de probabilidade, de impacto, de nível 
   "controles, além dos modelos de lista de eventos, diagrama bow-tie e plano de tratamento — foram "
   "incorporados nesta versão, e a escala oficial substituiu a régua linear usada antes. Os anexos "
   "confirmam, porém, que a norma traz apenas descritores qualitativos e não define como converter dados "
-  "observáveis em níveis. A tabela de pesos usada no escore heurístico (por exemplo, capital/volume "
+  "observáveis em níveis. A tabela de pesos usada no escore heurístico (por exemplo, capital/valor do contrato "
   "abaixo de 2% → +1,2; empresa com menos de 3 anos → +0,8; sanção vigente na assinatura → +2,0) "
   "permanece, portanto, uma operacionalização proposta neste trabalho — plausível, porém arbitrária.")
 p("A validação desse quadro com os gestores de risco do STF, já em curso, é decisiva por dois motivos. "
   "Primeiro, legitima o escore perante a instituição. Segundo, condiciona diretamente o achado da seção "
-  "4.4: o “zero alertas ex-ante” depende dos pesos. Sugere-se documentar na dissertação, para cada fator, "
+  "4.4: o “quase nenhum alerta ex-ante” depende dos pesos. Sugere-se documentar na dissertação, para cada fator, "
   "o descritor da norma que ele pretende sustentar, o proxy de dados usado, o peso e a justificativa "
   "validada. O mesmo vale para a correspondência entre as faixas de probabilidade do modelo e os "
   "descritores qualitativos (“Rara” … “Praticamente certa”). Importante: o resultado central (modelo "

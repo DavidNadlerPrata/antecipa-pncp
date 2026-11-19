@@ -99,30 +99,33 @@ modelos = {
 
 # ------------------------------------------------- baseline heurístico (transp.)
 def heuristica(r):
-    pts = 1.0
+    """Escore ex-ante com os pesos de escala_781.PESOS (fatores disponíveis no
+    dataset multi-órgão; sanções e crescimento atípico não estão nele)."""
+    P = E.PESOS
+    pts = E.BASE_PONTOS
     cap, val = num(r, "capital_social"), num(r, "valor_global")
     razao = cap / val if (not np.isnan(cap)) and val else np.nan
     if np.isnan(cap) or cap == 0:
-        pts += 0.3
+        pts += P["F3"]
     elif not np.isnan(razao) and razao < 0.02:
-        pts += 1.2
+        pts += P["F1"]
     elif not np.isnan(razao) and razao > 0.3:
-        pts -= 0.5
+        pts += P["F2"]
     idade = num(r, "idade_forn_anos")
     if not np.isnan(idade):
-        pts += 0.8 if idade < 3 else (-0.4 if idade > 10 else 0)
+        pts += P["F4"] if idade < 3 else (P["F5"] if idade > 10 else 0)
     if num(r, "situacao_ativa") == 0:
-        pts += 1.5
+        pts += P["F7"]
     dur = num(r, "duracao_dias")
     if not np.isnan(dur) and dur > 360:
-        pts += 0.4
+        pts += P["F8"]
     return pts
 
 heur_score = np.array([heuristica(r) for r in rows])
 val_treino = np.array([num(r, "valor_global") for r in rows])[tr]
 quintis = np.nanpercentile(val_treino, [20, 40, 60, 80])
 imp_i = 1 + np.searchsorted(quintis, [num(r, "valor_global") for r in rows])
-prob_i = np.clip(np.round(heur_score), 1, 5).astype(int)
+prob_i = np.array([E.posicao_probabilidade(x) for x in heur_score])  # 0,5 para cima
 # régua oficial da Res. 781/2022: valores 1-2-5-8-10, risco inerente 0–100
 heur_pont = np.array([E.pontuacao(int(p), int(i)) for p, i in zip(prob_i, imp_i)])
 heur_alto = (heur_pont >= 40).astype(int)        # Elevado ou Crítico

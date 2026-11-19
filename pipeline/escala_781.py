@@ -43,6 +43,20 @@ RISCO_CONTROLE = {"Inexistente": 1.0, "Insuficiente": 0.8, "Mediano": 0.6,
                   "Satisfatório": 0.4, "Forte": 0.2}
 
 
+def posicao_probabilidade(pontos):
+    """Converte a soma de pontos do escore heurístico na posição ordinal 1–5,
+    arredondando 0,5 PARA CIMA — regra convencional, idêntica à função
+    ARRED/ROUND do Excel usada na planilha de validação.
+
+    Não usar round() do Python: ele arredonda 0,5 para o par mais próximo
+    (2,5 -> 2, 3,5 -> 4), o que contrariava a regra documentada e, até 19/11/2026,
+    alterava a posição de 29 leituras na carteira do STF. O round(x, 6) elimina
+    ruído de ponto flutuante (1,2 + 0,3 = 1,4999999…).
+    """
+    import math
+    return max(1, min(5, math.floor(round(float(pontos), 6) + 0.5)))
+
+
 def pontuacao(p, i):
     """Risco inerente oficial (0–100) a partir das posições ordinais 1–5."""
     return VALOR[p] * VALOR[i]
@@ -57,3 +71,31 @@ def nivel(p, i):
 
 
 ALTOS = ("Elevado", "Crítico")
+
+
+# ---------------------------------------------------------------------------
+# Tabela de pontos do escore heurístico — OPERACIONALIZAÇÃO PRÓPRIA, EM VALIDAÇÃO
+# com os gestores de risco do STF (planilha gerada por gera_planilha_validacao.py).
+# Fonte única: processa.py e os baselines dos scripts de treino leem daqui.
+# Para adotar pesos validados, altere apenas este dicionário e reprocesse.
+# Os limiares (2 %, 30 %, 3 anos…) ficam no código que aplica cada regra.
+# ---------------------------------------------------------------------------
+BASE_PONTOS = 1.0   # todo contrato parte de 1,0 ponto (posição "Muito baixa")
+PESOS = {
+    # ex-ante — conhecidos na assinatura
+    "F1": 1.2,    # capital social < 2 % do valor do contrato
+    "F2": -0.5,   # capital social > 30 % do valor do contrato
+    "F3": 0.3,    # capital social não informado na base aberta (ex.: consórcios)
+    "F4": 0.8,    # CNPJ com menos de 3 anos na data da assinatura
+    "F5": -0.4,   # CNPJ com mais de 10 anos na data da assinatura
+    "F6": 1.0,    # crescimento contratual atípico (≥ 3× a mediana no PNCP) — só top-15
+    "F7": 1.5,    # situação cadastral na Receita diferente de "Ativa"
+    "F8": 0.4,    # vigência prevista superior a 12 meses
+    "F9": 2.0,    # sanção CEIS/CNEP vigente e já publicada na assinatura
+    # (F10 — "fornecedor sem perfil coletado", +0,3 — retirado em 19/11/2026: era
+    #  artefato de coleta; F1–F5 e F7 passaram a usar o cadastro de todos)
+    # observado — posteriores à assinatura
+    "O1": 0.8,    # 2 ou mais termos aditivos
+    "O2": 0.8,    # valor acumulado > 10 % acima do inicial
+    "O3": 1.5,    # termo de rescisão/extinção registrado
+}

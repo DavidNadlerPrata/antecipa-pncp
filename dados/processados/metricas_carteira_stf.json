@@ -5,8 +5,9 @@
  "escala": "Res. STF 781/2022 — níveis 1-2-5-8-10, risco inerente 0–100",
  "distribuicao": {
   "ex-ante": {
-   "Baixo": 135,
-   "Moderado": 158
+   "Baixo": 221,
+   "Moderado": 70,
+   "Elevado": 2
   },
   "ML (matriz)": {
    "Moderado": 122,
@@ -15,28 +16,28 @@
    "Baixo": 80
   },
   "observado": {
-   "Baixo": 119,
-   "Moderado": 154,
+   "Baixo": 198,
+   "Moderado": 76,
    "Elevado": 16,
-   "Crítico": 4
+   "Crítico": 3
   }
  },
  "criterios": [
   {
    "criterio": "Ex-ante (Res. 781) — Elevado/Crítico",
-   "alertas": 0,
+   "alertas": 2,
    "acertos": 0,
-   "precisao": null,
+   "precisao": 0.0,
    "recall": 0.0,
-   "lift": null
+   "lift": 0.0
   },
   {
    "criterio": "Ex-ante (Res. 781) — Moderado ou acima",
-   "alertas": 158,
-   "acertos": 32,
-   "precisao": 0.2025,
-   "recall": 0.5161,
-   "lift": 0.96
+   "alertas": 72,
+   "acertos": 14,
+   "precisao": 0.1944,
+   "recall": 0.2258,
+   "lift": 0.92
   },
   {
    "criterio": "Matriz ML — Elevado/Crítico",
@@ -81,10 +82,10 @@
   {
    "criterio": "Ex-ante top-50 (risco inerente + pontos)",
    "alertas": 50,
-   "acertos": 9,
-   "precisao": 0.18,
-   "recall": 0.1452,
-   "lift": 0.85
+   "acertos": 11,
+   "precisao": 0.22,
+   "recall": 0.1774,
+   "lift": 1.04
   },
   {
    "criterio": "ML top-50 (probabilidade)",
@@ -97,10 +98,10 @@
   {
    "criterio": "Ex-ante top-100 (risco inerente + pontos)",
    "alertas": 100,
-   "acertos": 19,
-   "precisao": 0.19,
-   "recall": 0.3065,
-   "lift": 0.9
+   "acertos": 21,
+   "precisao": 0.21,
+   "recall": 0.3387,
+   "lift": 0.99
   },
   {
    "criterio": "ML top-100 (probabilidade)",
@@ -112,21 +113,21 @@
   },
   {
    "criterio": "(referência, circular) Observado — Elevado/Crítico",
-   "alertas": 20,
-   "acertos": 17,
-   "precisao": 0.85,
-   "recall": 0.2742,
-   "lift": 4.02
+   "alertas": 19,
+   "acertos": 15,
+   "precisao": 0.7895,
+   "recall": 0.2419,
+   "lift": 3.73
   }
  ],
  "contrato_010294_2023": {
   "ex_ante": [
    "Moderado",
-   20
+   10
   ],
   "observado": [
    "Crítico",
-   100
+   80
   ],
   "ml_prob": 0.045,
   "ml_matriz": "Moderado"
