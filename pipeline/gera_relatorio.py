@@ -111,13 +111,13 @@ p("Evolução do Produto Técnico-Tecnológico do projeto “Do Controle Reativo
   "IA para Gestão Preditiva de Riscos em Compras Públicas no STF”", italic=True, tam=11, center=True)
 p("Para: Cristina Harumi Matsunaga e Profa. Dra. Marina Figueiredo Moreira (FACE/UnB)",
   cor=CINZA, tam=10, center=True)
-p("Elaborado por David Nadler Prata, com apoio de IA (Claude) · versão de 18 de novembro de 2026 "
+p("Elaborado por David Nadler Prata, com apoio de IA (Claude) · versão de 19 de novembro de 2026 "
   "(1ª versão: 22 de julho de 2026)", cor=CINZA, tam=10, center=True)
 
 # ------------------------------------------------------- nota desta versão
 doc.add_heading("Nota sobre esta versão", level=1)
 p("Os anexos oficiais da Resolução STF nº 781/2022 e a chave da API do Portal da Transparência, enviados "
-  "pela pesquisadora, permitiram três correções e um avanço em relação à versão de julho:")
+  "pela pesquisadora, permitiram quatro correções e um avanço em relação à versão de julho:")
 bullet([("Escala oficial da Res. 781/2022. ", True),
         ("Os anexos mostram que probabilidade e impacto têm níveis 1, 2, 5, 8 e 10, que o risco inerente "
          "vai de 0 a 100 e que as faixas são Baixo (0–9,9), Moderado (10–39,9), Elevado (40–79,9) e "
@@ -637,6 +637,12 @@ p("A validação desse quadro com os gestores de risco do STF, já em curso, é 
   "descritores qualitativos (“Rara” … “Praticamente certa”). Importante: o resultado central (modelo "
   "supervisionado) não depende dessa tabela — o rótulo vem do desfecho real, justamente para escapar da "
   "circularidade.")
+p("Para apoiar essa validação, acompanha este relatório a planilha Validacao_tabela_de_pontos_ANTECIPA.xlsx: "
+  "um fator por linha, com regra, fonte, peso atual, racional e perguntas para os gestores, campos para "
+  "registrar a avaliação (manter, ajustar ou excluir) e um simulador que recalcula os 293 contratos do STF "
+  "com os pesos propostos, mostrando na hora quantos alertas a matriz ex-ante emite e quantos acertam. Com "
+  "os pesos atuais, a planilha reproduz exatamente os números do painel. Mudanças de limiar (por exemplo, "
+  "capital mínimo de 10% em vez de 2%) não são simuladas e exigem reprocessar os dados.")
 
 # ------------------------------------------------------- 8. limitações
 doc.add_heading("8. Limitações honestas", level=1)
